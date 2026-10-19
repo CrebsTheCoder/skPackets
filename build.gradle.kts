@@ -13,7 +13,9 @@ repositories {
     maven("https://maven.pvphub.me/tofaa")
     maven("https://repo.skriptlang.org/releases")
     maven("https://jitpack.io") {
-        content { includeGroup("com.github.ShaneBeee") }
+        content {
+            includeGroup("com.github.ShaneBeee")
+        }
         metadataSources {
             mavenPom()
             artifact()
@@ -23,9 +25,15 @@ repositories {
 }
 
 dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.mockito:mockito-core:5.15.2")
+    testRuntimeOnly("io.netty:netty-buffer:4.2.16.Final")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.4")
     implementation("com.github.ShaneBeee:SkriptRegistration:1.5.0")
     compileOnly("io.papermc.paper:paper-api:26.3.build.195-stable")
-    compileOnly("com.github.SkriptLang:Skript:2.17.0") { isTransitive = false }
+    compileOnly("com.github.SkriptLang:Skript:2.17.0") {
+        isTransitive = false
+    }
     compileOnly("com.github.retrooper:packetevents-spigot:2.14.0")
     implementation("io.github.tofaa2:spigot:4.0.0-alpha.4") {
         exclude(group = "org.jetbrains", module = "annotations")
@@ -43,7 +51,9 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.processResources {
     inputs.property("version", project.version)
-    filesMatching("plugin.yml") { expand("version" to project.version) }
+    filesMatching("plugin.yml") {
+        expand("version" to project.version)
+    }
 }
 
 tasks.shadowJar {
@@ -53,10 +63,22 @@ tasks.shadowJar {
     mergeServiceFiles()
 }
 
-tasks.jar { archiveClassifier.set("plain") }
-tasks.build { dependsOn(tasks.shadowJar) }
+tasks.jar {
+    archiveClassifier.set("plain")
+}
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
 
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
+}
+
+configurations.testImplementation {
+    extendsFrom(configurations.compileOnly.get())
+}
+tasks.test {
+    useJUnitPlatform()
+    systemProperty("net.bytebuddy.experimental", "true")
 }

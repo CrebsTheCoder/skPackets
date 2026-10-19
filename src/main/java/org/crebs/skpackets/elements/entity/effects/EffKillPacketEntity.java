@@ -4,15 +4,18 @@ import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
+
 import com.github.shanebeee.skr.Registration;
+
 import me.tofaa.entitylib.wrapper.WrapperEntity;
+
 import org.bukkit.event.Event;
 
 public class EffKillPacketEntity extends Effect {
 
     public static void register(Registration registration) {
-        registration.newEffect(EffKillPacketEntity.class,
-                "kill packet entity %packetentity%")
+        registration
+                .newEffect(EffKillPacketEntity.class, "kill packet entity %packetentity%")
                 .name("Kill Packet Entity")
                 .description("Kills the packet entity")
                 .examples("kill packet entity {_entity}")
@@ -24,10 +27,11 @@ public class EffKillPacketEntity extends Effect {
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean init(Expression<?>[] expressions,
-                        int matchedPattern,
-                        Kleenean isDelayed,
-                        ParseResult parseResult) {
+    public boolean init(
+            Expression<?>[] expressions,
+            int matchedPattern,
+            Kleenean isDelayed,
+            ParseResult parseResult) {
         entityInput = (Expression<WrapperEntity>) expressions[0];
         return true;
     }
@@ -40,7 +44,7 @@ public class EffKillPacketEntity extends Effect {
             return;
         }
 
-        entity.remove();
+        org.crebs.skpackets.SkPackets.getInstance().getPacketEntities().remove(entity);
     }
 
     @Override

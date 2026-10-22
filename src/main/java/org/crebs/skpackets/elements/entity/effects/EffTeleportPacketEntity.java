@@ -22,14 +22,25 @@ public class EffTeleportPacketEntity extends Effect {
         registration
                 .newEffect(
                         EffTeleportPacketEntity.class,
-                        "teleport packet entit(y|ies) %packetentities% to %location%")
+                        "teleport (fake|packet) entit(y|ies) %packetentities% to" + " %location%")
                 .name("Teleport Packet Entities")
                 .description(
                         "Moves packet entities and updates the position and world used when"
                                 + " restoring their viewers.")
                 .examples(
-                        "teleport packet entity {_mob} to {_loc}",
-                        "teleport packet entities {_mobs::*} to location of player")
+                        """
+                        command /follow-me:
+                            trigger:
+                                set {_mob} to a new packet entity:
+                                    entity: zombie
+                                    location: location of player
+                                    viewers: player
+                                wait 2 seconds
+                                set {_loc} to location of player
+                                teleport packet entity {_mob} to {_loc}
+                                wait 3 seconds
+                                kill packet entity {_mob}
+                        """)
                 .since("1.0.0")
                 .register();
     }

@@ -24,8 +24,9 @@ public class EffPacketEntityViewers extends Effect {
         registration
                 .newEffect(
                         EffPacketEntityViewers.class,
-                        "add %players% to [the] viewers of packet entit(y|ies) %packetentities%",
-                        "remove %offlineplayers% from [the] viewers of packet entit(y|ies)"
+                        "add %players% to [the] viewers of (fake|packet) entit(y|ies)"
+                                + " %packetentities%",
+                        "remove %offlineplayers% from [the] viewers of (fake|packet) entit(y|ies)"
                                 + " %packetentities%")
                 .name("Packet Entity Viewers")
                 .description(
@@ -33,8 +34,18 @@ public class EffPacketEntityViewers extends Effect {
                                 + " players. Updates persistence tracking. Removing the last viewer"
                                 + " hides the entity without destroying it.")
                 .examples(
-                        "add player to viewers of packet entity {_mob}",
-                        "remove player from viewers of packet entity {_mob}")
+                        """
+                        command /private-preview:
+                            trigger:
+                                set {_mob} to a new packet entity:
+                                    entity: zombie
+                                    location: location of player
+                                    viewers: player
+                                add player to viewers of packet entity {_mob}
+                                wait 5 seconds
+                                remove player from viewers of packet entity {_mob}
+                                kill packet entity {_mob}
+                        """)
                 .since("1.0.0")
                 .register();
     }

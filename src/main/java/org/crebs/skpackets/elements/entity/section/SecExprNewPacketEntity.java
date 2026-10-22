@@ -19,20 +19,32 @@ public class SecExprNewPacketEntity extends SectionExpression<WrapperEntity> {
     public static void register(Registration registration) {
         registration
                 .newSimpleExpression(
-                        SecExprNewPacketEntity.class, WrapperEntity.class, "[a] new packet entity")
+                        SecExprNewPacketEntity.class,
+                        WrapperEntity.class,
+                        "[a] new (fake|packet) entity")
                 .name("New Packet Entity")
                 .description(
                         "Spawns and returns a packet entity. Requires entity, viewers and location"
-                                + " entries; persistent defaults to true. Metadata belongs in the"
-                                + " optional meta field section.")
+                            + " entries; persistent defaults to true. Metadata belongs in the"
+                            + " optional meta field section. Player entities require skin; username"
+                            + " defaults to NPC.")
                 .examples(
-                        "set {_mob} to a new packet entity:",
-                        "    entity: zombie",
-                        "    viewers: player",
-                        "    location: location of player",
-                        "    persistent: true",
-                        "    meta field:",
-                        "        sneaking: true")
+                        """
+                        command /my-double:
+                            trigger:
+                                set {_mob} to a new packet entity:
+                                    entity: player
+                                    username: "Demo"
+                                    skin: skin of player
+                                    viewers: player
+                                    location: location of player
+                                    persistent: true
+                                    meta field:
+                                        sneaking: true
+                                        pose: "sneaking" parsed as entity pose
+                                wait 5 seconds
+                                kill packet entity {_mob}
+                        """)
                 .since("1.0.0")
                 .register();
     }

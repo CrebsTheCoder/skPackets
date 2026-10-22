@@ -18,7 +18,13 @@ public class ExprEntityId extends SimpleExpression<Number> {
                 .newSimpleExpression(ExprEntityId.class, Number.class, "entity id of %entity%")
                 .name("Entity ID")
                 .description("Returns the entity ID of a given entity.")
-                .examples("set {_id} to entity id of player")
+                .examples(
+                        """
+                        command /who-am-i:
+                            trigger:
+                                set {_id} to entity id of player
+                                send "Your entity ID is %{_id}%." to player
+                        """)
                 .since("1.0.0")
                 .register();
     }

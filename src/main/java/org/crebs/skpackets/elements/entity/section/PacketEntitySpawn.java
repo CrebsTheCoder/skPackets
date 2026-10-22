@@ -11,7 +11,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.SkPackets;
-import org.crebs.skpackets.api.metadata.PacketEntityField;
+import org.crebs.skpackets.api.entity.metadata.PacketEntityField;
 import org.skriptlang.skript.bukkit.entity.EntityData;
 import org.skriptlang.skript.lang.entry.EntryValidator;
 import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
@@ -28,6 +28,10 @@ final class PacketEntitySpawn {
                             new ExpressionEntryData<>("location", null, false, Location.class))
                     .addEntryData(
                             new ExpressionEntryData<>("persistent", null, true, Boolean.class))
+                    .addEntryData(
+                            new ExpressionEntryData<>(
+                                    "skin", null, true, org.crebs.skpackets.api.entity.Skin.class))
+                    .addEntryData(new ExpressionEntryData<>("username", null, true, String.class))
                     .addSection("meta field", true)
                     .build();
     private static final EntryValidator META_ENTRIES = metadataEntries();
@@ -50,6 +54,8 @@ final class PacketEntitySpawn {
     private Expression<Player> viewers;
     private Expression<EntityData<?>> type;
     private Expression<Boolean> persistent;
+    private Expression<org.crebs.skpackets.api.entity.Skin> skin;
+    private Expression<String> username;
 
     @SuppressWarnings("unchecked")
     boolean init(SectionNode node) {
@@ -81,6 +87,10 @@ final class PacketEntitySpawn {
                 return error("persistent must be one boolean");
             }
         }
+        skin = (Expression<org.crebs.skpackets.api.entity.Skin>) entries.getOptional("skin", false);
+        username = (Expression<String>) entries.getOptional("username", false);
+        if ((skin != null && !skin.isSingle()) || (username != null && !username.isSingle()))
+            return error("skin and username require one value");
         SectionNode metaNode = (SectionNode) entries.getOptional("meta field", false);
         if (metaNode == null) {
             return true;
@@ -139,6 +149,19 @@ final class PacketEntitySpawn {
         if (keep == null) {
             return null;
         }
+        var texture = skin == null ? null : skin.getSingle(event);
+        String name = username == null ? "NPC" : username.getSingle(event);
+        if (entityType == EntityType.PLAYER
+                && (texture == null || name == null || !name.matches("[A-Za-z0-9_]{1,16}"))) {
+            Skript.error(
+                    "Player entities require a skin and a username of 1 to 16 letters, numbers or"
+                            + " underscores.");
+            return null;
+        }
+        if (entityType != EntityType.PLAYER && (skin != null || username != null)) {
+            Skript.error("skin and username are only available for player entities.");
+            return null;
+        }
         try {
             Map<PacketEntityField, Object> values = new LinkedHashMap<>();
             for (var entry : metadata.entrySet()) {
@@ -156,7 +179,17 @@ final class PacketEntitySpawn {
                             at,
                             Arrays.asList(players),
                             keep,
-                            entity -> values.forEach((field, value) -> field.set(entity, value)));
+                            entity -> {
+                                if (entity
+                                        instanceof
+                                        me.tofaa.entitylib.wrapper.WrapperPlayer player) {
+                                    player.setProfile(
+                                            new com.github.retrooper.packetevents.protocol.player
+                                                    .UserProfile(player.getUuid(), name));
+                                    player.setTextureProperties(texture.properties());
+                                }
+                                values.forEach((field, value) -> field.set(entity, value));
+                            });
         } catch (IllegalArgumentException exception) {
             Skript.error(exception.getMessage());
             return null;

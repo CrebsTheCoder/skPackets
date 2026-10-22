@@ -1,19 +1,25 @@
 package org.crebs.skpackets;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import com.github.shanebeee.skr.Registration;
 
-import me.tofaa.entitylib.APIConfig;
-import me.tofaa.entitylib.EntityLib;
-import me.tofaa.entitylib.spigot.SpigotEntityLibPlatform;
-
 import org.bukkit.plugin.java.JavaPlugin;
-import org.crebs.skpackets.api.PacketEntityManager;
+import org.crebs.skpackets.api.entity.PacketEntityManager;
+import org.crebs.skpackets.api.team.PacketTeamManager;
+import org.crebs.skpackets.elements.ElementCounts;
 import org.crebs.skpackets.elements.ElementRegistration;
+import org.crebs.skpackets.elements.ElementRuntime;
 
 public final class SkPackets extends JavaPlugin {
     private static SkPackets instance;
     private PacketEntityManager packetEntities;
+    private final PacketTeamManager packetTeams = new PacketTeamManager();
+
+    public PacketTeamManager getPacketTeams() {
+        return packetTeams;
+    }
+
+    private ElementRuntime elementRuntime;
+    private Registration registration;
 
     public static SkPackets getInstance() {
         if (instance == null) {
@@ -29,16 +35,29 @@ public final class SkPackets extends JavaPlugin {
         return packetEntities;
     }
 
+    public Registration getRegistration() {
+        return registration;
+    }
+
     @Override
     public void onEnable() {
-        EntityLib.init(
-                new APIConfig(PacketEvents.getAPI(), new SpigotEntityLibPlatform(this))
-                        .disableBStats());
+        try {
+            Class.forName("net.kyori.adventure.util.Buildable");
+        } catch (ClassNotFoundException exception) {
+            getLogger()
+                    .severe(
+                            "PacketEvents 2.14 requires Adventure 4. Use Paper 26.1.2; Adventure 5"
+                                    + " servers are not supported yet.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         packetEntities = new PacketEntityManager(this);
         instance = this;
-        Registration registration = new Registration(getName(), false);
+        getServer().getPluginManager().registerEvents(packetTeams, this);
+        elementRuntime = new ElementRuntime(this);
+        registration = new Registration(getName(), true);
         ElementRegistration.register(registration);
-        getLogger().info("skPackets enabled!");
+        ElementCounts.log(registration, getServer().getConsoleSender());
     }
 
     @Override
@@ -46,8 +65,13 @@ public final class SkPackets extends JavaPlugin {
         if (packetEntities != null) {
             packetEntities.close();
         }
-        EntityLib.shutdown();
+        if (elementRuntime != null) {
+            elementRuntime.close();
+            elementRuntime = null;
+        }
+        packetTeams.clear();
         packetEntities = null;
+        registration = null;
         instance = null;
     }
 }

@@ -1,0 +1,41 @@
+package org.crebs.skpackets.elements.entity.expressions.metadata;
+
+import com.github.shanebeee.skr.Registration;
+
+import org.crebs.skpackets.api.entity.metadata.PacketEntityField;
+import org.crebs.skpackets.elements.entity.expressions.ExprPacketEntityField;
+
+public final class ExprPacketEntityDisplayUseDefaultBackground extends ExprPacketEntityField {
+    public ExprPacketEntityDisplayUseDefaultBackground() {
+        super(PacketEntityField.DEFAULT_BACKGROUND);
+    }
+
+    public static void register(Registration registration) {
+        registration
+                .newSimpleExpression(
+                        ExprPacketEntityDisplayUseDefaultBackground.class,
+                        Object.class,
+                        "[meta field] display use default background of [(fake|packet)"
+                                + " entit(y|ies)] %packetentities%")
+                .name("Packet Entity - Display Use Default Background")
+                .description(
+                        "The packet entity display use default background property. Supports"
+                                + " set, delete and reset; unsupported entity types are rejected.")
+                .examples(
+                        """
+                        command /hologram-use-default-background:
+                            trigger:
+                                set {_mob} to a new packet entity:
+                                    entity: text display
+                                    location: location of player
+                                    viewers: player
+                                    meta field:
+                                        display text: "Hello!"
+                                set meta field display use default background of packet entity {_mob} to true
+                                wait 5 seconds
+                                kill packet entity {_mob}
+                        """)
+                .since("1.0.0")
+                .register();
+    }
+}

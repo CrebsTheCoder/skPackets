@@ -30,10 +30,6 @@ import com.google.common.primitives.Primitives;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
 
 public abstract class FieldPropertyExpression<T> extends PropertyExpression<T, Object> {
 
@@ -89,40 +85,7 @@ public abstract class FieldPropertyExpression<T> extends PropertyExpression<T, O
             return null;
         }
 
-        List<Object> elements = new ArrayList<>();
-
-        for (T entity : source) {
-            if (entity == null) {
-                continue;
-            }
-
-            FieldAccessor<T, ?> accessor = resolveAccessor(entity);
-            if (accessor == null) {
-                continue;
-            }
-
-            Object value = accessor.getter().apply(entity);
-            if (value == null) {
-                continue;
-            }
-
-            if (value.getClass().isArray()) {
-                int len = Array.getLength(value);
-                int i = 0;
-                while (i < len) {
-                    elements.add(Array.get(value, i++));
-                }
-            } else {
-                elements.add(value);
-            }
-        }
-
-        if (elements.isEmpty()) {
-            return null;
-        }
-
-        Class<?> returnType = Primitives.wrap(getReturnType());
-        return elements.toArray((Object[]) Array.newInstance(returnType, 0));
+        return FieldValues.read(source, this::resolveAccessor, getReturnType());
     }
 
     @Nullable
@@ -149,63 +112,13 @@ public abstract class FieldPropertyExpression<T> extends PropertyExpression<T, O
         return new Class<?>[] {Primitives.wrap(typeToAccept)};
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void change(Event event, Object[] delta, Changer.ChangeMode mode) {
         if (mode != Changer.ChangeMode.SET || delta == null || delta.length == 0) {
             return;
         }
 
-        for (T entity : getExpr().getArray(event)) {
-            if (entity == null) {
-                continue;
-            }
-
-            FieldAccessor<T, ?> accessor = resolveAccessor(entity);
-            if (accessor == null || accessor.setter() == null) {
-                continue;
-            }
-
-            Object newValue;
-            Class<?> expected = accessor.expectedType();
-
-            if (expected.isArray()) {
-                Class<?> componentType = expected.getComponentType();
-                Object typedArray = Array.newInstance(componentType, delta.length);
-                for (int i = 0; i < delta.length; i++) {
-                    Array.set(typedArray, i, delta[i]);
-                }
-                newValue = typedArray;
-            } else {
-                if (delta.length == 1) {
-                    newValue = delta[0];
-                } else {
-                    newValue = delta;
-                }
-            }
-
-            boolean isCompatible = expected == Object.class || expected.isInstance(newValue);
-            if (!isCompatible && expected.isArray() && newValue.getClass().isArray()) {
-                isCompatible = true;
-            }
-
-            if (!isCompatible) {
-                Skript.warning(
-                        "Cannot set the " + fieldKind() + " field '"
-                                + accessor.name()
-                                + "' to a value of type "
-                                + newValue.getClass().getSimpleName()
-                                + ". Expected type: "
-                                + expected.getSimpleName());
-                continue;
-            }
-
-            try {
-                ((BiConsumer<T, Object>) accessor.setter()).accept(entity, newValue);
-            } catch (IllegalArgumentException exception) {
-                Skript.error(exception.getMessage());
-            }
-        }
+        FieldValues.set(getExpr().getArray(event), this::resolveAccessor, delta, fieldKind());
     }
 
     @Override

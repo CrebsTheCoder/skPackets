@@ -35,25 +35,21 @@ import org.bukkit.event.Event;
 import org.crebs.skpackets.api.general.packet.PacketSendOrReceiveEvent;
 import org.crebs.skpackets.api.util.field.FieldAccessor;
 import org.crebs.skpackets.api.util.field.FieldSchema;
+import org.crebs.skpackets.api.util.field.FieldValues;
 import org.crebs.skpackets.elements.general.event.EvtPacketSendOrReceive;
 import org.crebs.skpackets.elements.general.event.EvtPacketSendOrReceive.PacketSendOrReceiveParserData;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.function.BiConsumer;
 
 @SuppressWarnings("rawtypes")
 public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
 
     public static void register(Registration reg) {
-        StringBuilder description = new StringBuilder();
-        description.append("Gets or sets a field's value from a packet by its name.\n\n");
-        description.append(FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
-                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ")));
+        String description = "Gets or sets a field's value from a packet by its name.\n\n"
+                + FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
+                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " "));
 
         reg.newPropertyExpression(
                         ExprPacketField.class,
@@ -61,7 +57,7 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
                         "[(fake|packet)] packet [field] <[a-zA-Z0-9_ ]+>",
                         "packet")
                 .name("General - Packet Field")
-                .description(description.toString())
+                .description(description)
                 .examples(
                         """
                         on clientbound entity metadata:
@@ -173,40 +169,7 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
 
     @Override
     protected Object[] get(Event event, PacketWrapper[] source) {
-        List<Object> elements = new ArrayList<>();
-
-        for (PacketWrapper<?> wrapper : source) {
-            if (wrapper == null) {
-                continue;
-            }
-
-            FieldAccessor<PacketWrapper<?>, ?> accessor = resolveAccessor(wrapper);
-            if (accessor == null) {
-                continue;
-            }
-
-            Object value = accessor.getter().apply(wrapper);
-            if (value == null) {
-                continue;
-            }
-
-            if (value.getClass().isArray()) {
-                int len = Array.getLength(value);
-                int i = 0;
-                while (i < len) {
-                    elements.add(Array.get(value, i++));
-                }
-            } else {
-                elements.add(value);
-            }
-        }
-
-        if (elements.isEmpty()) {
-            return null;
-        }
-
-        Class<?> returnType = Primitives.wrap(getReturnType());
-        return elements.toArray((Object[]) Array.newInstance(returnType, 0));
+        return FieldValues.read(source, this::resolveAccessor, getReturnType());
     }
 
     @Override
@@ -252,60 +215,13 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
         return new Class<?>[] {Primitives.wrap(typeToAccept)};
     }
 
-    @SuppressWarnings({"unchecked"})
     @Override
     public void change(Event event, Object[] delta, Changer.ChangeMode mode) {
         if (mode != Changer.ChangeMode.SET || delta == null || delta.length == 0) {
             return;
         }
 
-        for (PacketWrapper<?> wrapper : getExpr().getArray(event)) {
-            if (wrapper == null) {
-                continue;
-            }
-
-            FieldAccessor<PacketWrapper<?>, ?> accessor = resolveAccessor(wrapper);
-            if (accessor == null || accessor.setter() == null) {
-                continue;
-            }
-
-            Object newValue;
-            Class<?> expected = accessor.expectedType();
-
-            if (expected.isArray()) {
-                Class<?> componentType = expected.getComponentType();
-                Object typedArray = Array.newInstance(componentType, delta.length);
-                for (int i = 0; i < delta.length; i++) {
-                    Array.set(typedArray, i, delta[i]);
-                }
-                newValue = typedArray;
-            } else {
-                newValue = delta.length == 1 ? delta[0] : delta;
-            }
-
-            boolean isCompatible = expected == Object.class || expected.isInstance(newValue);
-            if (!isCompatible && expected.isArray() && newValue.getClass().isArray()) {
-                isCompatible = true;
-            }
-
-            if (!isCompatible) {
-                Skript.warning(
-                        "Cannot set the packet field '"
-                                + accessor.name()
-                                + "' to a value of type "
-                                + newValue.getClass().getSimpleName()
-                                + ". Expected type: "
-                                + expected.getSimpleName());
-                continue;
-            }
-
-            try {
-                ((BiConsumer<PacketWrapper<?>, Object>) accessor.setter())
-                        .accept(wrapper, newValue);
-            } catch (IllegalArgumentException ex) {
-                Skript.error(ex.getMessage());
-            }
-        }
+        FieldValues.set(getExpr().getArray(event), this::resolveAccessor, delta, "packet");
     }
 
     @Override

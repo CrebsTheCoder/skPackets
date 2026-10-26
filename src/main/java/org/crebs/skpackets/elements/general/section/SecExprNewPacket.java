@@ -65,17 +65,16 @@ public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
             VALIDATORS.put(def, builder.build());
         }
 
-        StringBuilder description = new StringBuilder();
-        description.append("Create a new packet from a packet type.\n");
-        description.append(FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
-                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ")));
+        String description = "Create a new packet from a packet type.\n"
+                + FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
+                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " "));
 
         reg.newSimpleExpression(
                         SecExprNewPacket.class,
                         (Class) PacketWrapper.class,
                         "[a] [new] %*packettype%")
                 .name("General - New Packet")
-                .description(description.toString())
+                .description(description)
                 .examples(
                         """
                         command killTargetForMe:

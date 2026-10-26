@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayTranslation extends ExprPacketEntityFi
                 .newSimpleExpression(
                         ExprPacketEntityDisplayTranslation.class,
                         Object.class,
-                        "[meta field] display translation of [(fake|packet) entit(y|ies)]"
+                        "meta [field] display translation of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Display Translation")
                 .description(

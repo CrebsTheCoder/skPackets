@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayLineWidth extends ExprPacketEntityFiel
                 .newSimpleExpression(
                         ExprPacketEntityDisplayLineWidth.class,
                         Object.class,
-                        "[meta field] display line width of [(fake|packet) entit(y|ies)]"
+                        "meta [field] display line width of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Display Line Width")
                 .description(

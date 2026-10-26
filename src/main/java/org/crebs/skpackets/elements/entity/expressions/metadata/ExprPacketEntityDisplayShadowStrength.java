@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayShadowStrength extends ExprPacketEntit
                 .newSimpleExpression(
                         ExprPacketEntityDisplayShadowStrength.class,
                         Object.class,
-                        "[meta field] display shadow strength of [(fake|packet) entit(y|ies)]"
+                        "meta [field] display shadow strength of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Display Shadow Strength")
                 .description(

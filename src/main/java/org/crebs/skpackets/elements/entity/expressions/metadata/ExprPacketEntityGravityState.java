@@ -15,7 +15,7 @@ public final class ExprPacketEntityGravityState extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityGravityState.class,
                         Object.class,
-                        "[meta field] gravity [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] gravity [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Gravity State")
                 .description(
                         "True enables gravity; false disables it. Supports set, delete and reset;"

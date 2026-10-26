@@ -15,7 +15,7 @@ public final class ExprPacketEntityGlowingState extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityGlowingState.class,
                         Object.class,
-                        "[meta field] glowing [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] glowing [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Glowing State")
                 .description(
                         "Enables the entity outline. A packet team supplies its outline color."

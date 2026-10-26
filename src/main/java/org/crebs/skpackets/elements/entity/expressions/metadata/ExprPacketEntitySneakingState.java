@@ -15,7 +15,7 @@ public final class ExprPacketEntitySneakingState extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntitySneakingState.class,
                         Object.class,
-                        "[meta field] sneaking [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] sneaking [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Sneaking State")
                 .description(
                         "Controls the sneaking metadata flag. Supports set, delete and reset;"

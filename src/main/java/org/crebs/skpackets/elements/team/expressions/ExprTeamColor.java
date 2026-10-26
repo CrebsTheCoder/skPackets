@@ -8,10 +8,10 @@ public final class ExprTeamColor extends TeamPropertyExpression<ch.njol.skript.u
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
+                .newPropertyExpression(
                         ExprTeamColor.class,
                         ch.njol.skript.util.Color.class,
-                        "(fake|packet) team color of %packets%")
+                        "(fake|packet) team color", "packets")
                 .name("Team Color")
                 .description(
                         "The Skript color used for member names and glowing outlines. Send the team"

@@ -15,7 +15,7 @@ public final class ExprPacketEntityCustomName extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityCustomName.class,
                         Object.class,
-                        "[meta field] custom name of [(fake|packet) entit(y|ies)]"
+                        "meta [field] custom name of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Custom Name")
                 .description(

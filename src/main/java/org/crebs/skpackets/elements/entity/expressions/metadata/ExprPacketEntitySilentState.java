@@ -15,7 +15,7 @@ public final class ExprPacketEntitySilentState extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntitySilentState.class,
                         Object.class,
-                        "[meta field] silent [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] silent [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Silent State")
                 .description(
                         "The packet entity silent state property. Supports set, delete and"

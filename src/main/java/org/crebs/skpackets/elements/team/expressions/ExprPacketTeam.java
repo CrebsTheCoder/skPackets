@@ -4,24 +4,26 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
-import ch.njol.skript.lang.util.SimpleExpression;
+import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.util.Kleenean;
-import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.crebs.skpackets.elements.team.PacketTeam;
 import com.github.shanebeee.skr.Registration;
 import org.bukkit.event.Event;
+import org.jetbrains.annotations.Nullable;
 import org.crebs.skpackets.SkPackets;
 import org.crebs.skpackets.elements.team.TeamEntityEntry;
 
 import java.util.ArrayList;
 
-public final class ExprPacketTeam extends SimpleExpression<PacketWrapper> {
+public final class ExprPacketTeam extends PropertyExpression<Object, PacketTeam> {
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
+                .newPropertyExpression(
                         ExprPacketTeam.class,
-                        PacketWrapper.class,
-                        "(fake|packet) team of %numbers/packetentities/entities%")
+                        PacketTeam.class,
+                        "(fake|packet) team",
+                        "numbers/packetentities/entities")
                 .name("Packet Team Of Entity")
                 .description(
                         "Gets the packet team assigned to entity IDs, fake entities or Bukkit"
@@ -51,22 +53,20 @@ public final class ExprPacketTeam extends SimpleExpression<PacketWrapper> {
                 .register();
     }
 
-    private Expression<?> entities;
-
     @Override
     public boolean init(
             Expression<?>[] expressions,
             int pattern,
             Kleenean delayed,
             SkriptParser.ParseResult result) {
-        entities = expressions[0];
+        setExpr(expressions[0]);
         return true;
     }
 
     @Override
-    protected PacketWrapper[] get(Event event) {
-        var teams = new ArrayList<PacketWrapper>();
-        for (Object entity : entities.getArray(event)) {
+    protected PacketTeam[] get(Event event, Object[] source) {
+        var teams = new ArrayList<PacketTeam>();
+        for (Object entity : source) {
             try {
                 var team =
                         SkPackets.getInstance()
@@ -79,20 +79,20 @@ public final class ExprPacketTeam extends SimpleExpression<PacketWrapper> {
                 Skript.error(ex.getMessage());
             }
         }
-        return teams.toArray(PacketWrapper[]::new);
+        return teams.toArray(PacketTeam[]::new);
     }
 
     @Override
-    public Class<?>[] acceptChange(ChangeMode mode) {
+    public Class<?> @Nullable [] acceptChange(ChangeMode mode) {
         return mode == ChangeMode.DELETE || mode == ChangeMode.RESET
-                ? new Class<?>[] {PacketWrapper.class}
+                ? new Class<?>[] {PacketTeam.class}
                 : null;
     }
 
     @Override
-    public void change(Event event, Object[] delta, ChangeMode mode) {
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         if (mode != ChangeMode.DELETE && mode != ChangeMode.RESET) return;
-        for (Object entity : entities.getArray(event)) {
+        for (Object entity : getExpr().getArray(event)) {
             try {
                 SkPackets.getInstance()
                         .getPacketTeams()
@@ -105,16 +105,16 @@ public final class ExprPacketTeam extends SimpleExpression<PacketWrapper> {
 
     @Override
     public boolean isSingle() {
-        return entities.isSingle();
+        return getExpr().isSingle();
     }
 
     @Override
-    public Class<? extends PacketWrapper> getReturnType() {
-        return PacketWrapper.class;
+    public Class<? extends PacketTeam> getReturnType() {
+        return PacketTeam.class;
     }
 
     @Override
-    public String toString(Event event, boolean debug) {
-        return "packet team of " + entities.toString(event, debug);
+    public String toString(@Nullable Event event, boolean debug) {
+        return "packet team of " + getExpr().toString(event, debug);
     }
 }

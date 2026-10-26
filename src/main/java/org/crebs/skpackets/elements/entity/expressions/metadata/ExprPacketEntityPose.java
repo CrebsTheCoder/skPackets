@@ -15,7 +15,7 @@ public final class ExprPacketEntityPose extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityPose.class,
                         Object.class,
-                        "[meta field] pose of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] pose of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Pose")
                 .description(
                         "The pose name, such as standing, crouching or swimming. Supports set,"

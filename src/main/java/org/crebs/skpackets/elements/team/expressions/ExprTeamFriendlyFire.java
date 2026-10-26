@@ -8,8 +8,8 @@ public final class ExprTeamFriendlyFire extends TeamPropertyExpression<Object> {
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
-                        ExprTeamFriendlyFire.class, Object.class, "(fake|packet) team friendly fire of %packets%")
+                .newPropertyExpression(
+                        ExprTeamFriendlyFire.class, Object.class, "(fake|packet) team friendly fire", "packets")
                 .name("Team Friendlyfire")
                 .description(
                         "Whether friendly fire is enabled in the client team definition. This"

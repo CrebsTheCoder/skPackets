@@ -8,7 +8,7 @@ public final class ExprTeamSuffix extends TeamPropertyExpression<Object> {
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(ExprTeamSuffix.class, Object.class, "(fake|packet) team suffix of %packets%")
+                .newPropertyExpression(ExprTeamSuffix.class, Object.class, "(fake|packet) team suffix", "packets")
                 .name("Team Suffix")
                 .description(
                         "The text shown after names of team members. Send the team packet to apply"

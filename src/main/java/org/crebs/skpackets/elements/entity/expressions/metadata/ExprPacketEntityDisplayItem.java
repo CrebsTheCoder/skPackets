@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayItem extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityDisplayItem.class,
                         Object.class,
-                        "[meta field] display item [stack] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display item [stack] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Item")
                 .description(
                         "The packet entity display item property. Supports set, delete and"

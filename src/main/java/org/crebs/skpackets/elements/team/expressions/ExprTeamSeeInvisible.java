@@ -8,10 +8,10 @@ public final class ExprTeamSeeInvisible extends TeamPropertyExpression<Object> {
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
+                .newPropertyExpression(
                         ExprTeamSeeInvisible.class,
                         Object.class,
-                        "(fake|packet) team see invisible teammates of %packets%")
+                        "(fake|packet) team see invisible teammates", "packets")
                 .name("Team Seeinvisible")
                 .description(
                         "Whether teammates can see invisible members of this team. Send the team"

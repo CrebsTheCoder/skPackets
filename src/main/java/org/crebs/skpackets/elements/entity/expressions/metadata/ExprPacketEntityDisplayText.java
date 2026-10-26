@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayText extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityDisplayText.class,
                         Object.class,
-                        "[meta field] display (content|text) of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display (content|text) of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Text")
                 .description(
                         "The text component shown by a text display. Supports set, delete and"

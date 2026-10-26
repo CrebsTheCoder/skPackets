@@ -15,7 +15,7 @@ public final class ExprPacketEntityInvisibleState extends ExprPacketEntityField 
                 .newSimpleExpression(
                         ExprPacketEntityInvisibleState.class,
                         Object.class,
-                        "[meta field] invisible [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] invisible [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Invisible State")
                 .description(
                         "The packet entity invisible state property. Supports set, delete"

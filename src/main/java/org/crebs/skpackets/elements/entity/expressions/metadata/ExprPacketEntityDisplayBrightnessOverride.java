@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayBrightnessOverride extends ExprPacketE
                 .newSimpleExpression(
                         ExprPacketEntityDisplayBrightnessOverride.class,
                         Object.class,
-                        "[meta field] display brightness [override] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display brightness [override] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Brightness Override")
                 .description(
                         "The packet entity display brightness override property. Supports"

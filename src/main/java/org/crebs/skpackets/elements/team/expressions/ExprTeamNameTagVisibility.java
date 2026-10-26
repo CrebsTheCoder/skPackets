@@ -8,10 +8,10 @@ public final class ExprTeamNameTagVisibility extends TeamPropertyExpression<Obje
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
+                .newPropertyExpression(
                         ExprTeamNameTagVisibility.class,
                         Object.class,
-                        "(fake|packet) team name tag visibility of %packets%")
+                        "(fake|packet) team name tag visibility", "packets")
                 .name("Team Nametagvisibility")
                 .description(
                         "Controls name tag visibility: always, never, hide for other teams, or hide"

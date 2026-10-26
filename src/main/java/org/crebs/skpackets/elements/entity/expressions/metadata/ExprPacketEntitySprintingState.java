@@ -15,7 +15,7 @@ public final class ExprPacketEntitySprintingState extends ExprPacketEntityField 
                 .newSimpleExpression(
                         ExprPacketEntitySprintingState.class,
                         Object.class,
-                        "[meta field] sprinting [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] sprinting [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Sprinting State")
                 .description(
                         "The packet entity sprinting state property. Supports set, delete"

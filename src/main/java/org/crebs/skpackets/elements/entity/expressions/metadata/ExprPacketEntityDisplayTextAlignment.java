@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayTextAlignment extends ExprPacketEntity
                 .newSimpleExpression(
                         ExprPacketEntityDisplayTextAlignment.class,
                         Object.class,
-                        "[meta field] display [text] alignment of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display [text] alignment of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Text Alignment")
                 .description(
                         "The packet entity display text alignment property. Supports set,"

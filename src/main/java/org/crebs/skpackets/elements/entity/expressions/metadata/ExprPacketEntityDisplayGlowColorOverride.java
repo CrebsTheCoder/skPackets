@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayGlowColorOverride extends ExprPacketEn
                 .newSimpleExpression(
                         ExprPacketEntityDisplayGlowColorOverride.class,
                         Object.class,
-                        "[meta field] display glow color [override] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display glow color [override] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Glow Color Override")
                 .description(
                         "The packet entity display glow color override property. Supports"

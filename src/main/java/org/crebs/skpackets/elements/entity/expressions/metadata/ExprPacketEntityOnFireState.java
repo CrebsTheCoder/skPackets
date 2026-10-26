@@ -15,7 +15,7 @@ public final class ExprPacketEntityOnFireState extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityOnFireState.class,
                         Object.class,
-                        "[meta field] on fire [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] on fire [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - On Fire State")
                 .description(
                         "The packet entity on fire state property. Supports set, delete and"

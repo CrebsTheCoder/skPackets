@@ -15,7 +15,7 @@ public final class ExprPacketEntityFrozenTime extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityFrozenTime.class,
                         Object.class,
-                        "[meta field] frozen (ticks|time) of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] frozen (ticks|time) of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Frozen Time")
                 .description(
                         "The duration the entity has been frozen in powdered snow. Supports set,"

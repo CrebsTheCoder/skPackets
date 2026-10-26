@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayTextShadowedState extends ExprPacketEn
                 .newSimpleExpression(
                         ExprPacketEntityDisplayTextShadowedState.class,
                         Object.class,
-                        "[meta field] display (shadowed [state]|text shadowed state) of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display (shadowed [state]|text shadowed state) of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Text Shadowed State")
                 .description(
                         "The packet entity display text shadowed state property. Supports"

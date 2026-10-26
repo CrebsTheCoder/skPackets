@@ -8,10 +8,10 @@ public final class ExprTeamCollisionRule extends TeamPropertyExpression<Object> 
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
+                .newPropertyExpression(
                         ExprTeamCollisionRule.class,
                         Object.class,
-                        "(fake|packet) team collision rule of %packets%")
+                        "(fake|packet) team collision rule", "packets")
                 .name("Team Collisionrule")
                 .description(
                         "Controls collisions: always, never, push other teams, or push own team."

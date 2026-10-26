@@ -4,7 +4,7 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
-import ch.njol.skript.lang.util.SimpleExpression;
+import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.util.Kleenean;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
@@ -14,10 +14,8 @@ import org.crebs.skpackets.elements.team.TeamField;
 import java.lang.reflect.Array;
 import java.util.*;
 
-public abstract class TeamPropertyExpression<T> extends SimpleExpression<T> {
+public abstract class TeamPropertyExpression<T> extends PropertyExpression<PacketWrapper<?>, T> {
     protected abstract TeamField field();
-
-    private Expression<PacketWrapper<?>> packets;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -26,15 +24,15 @@ public abstract class TeamPropertyExpression<T> extends SimpleExpression<T> {
             int pattern,
             Kleenean delayed,
             SkriptParser.ParseResult result) {
-        packets = (Expression<PacketWrapper<?>>) expressions[0];
+        setExpr((Expression<PacketWrapper<?>>) expressions[0]);
         return true;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected T[] get(Event event) {
+    protected T[] get(Event event, PacketWrapper<?>[] source) {
         List<Object> values = new ArrayList<>();
-        for (PacketWrapper<?> packet : packets.getArray(event)) {
+        for (PacketWrapper<?> packet : source) {
             if (!(packet instanceof WrapperPlayServerTeams team)) {
                 continue;
             }
@@ -65,7 +63,7 @@ public abstract class TeamPropertyExpression<T> extends SimpleExpression<T> {
 
     @Override
     public void change(Event event, Object[] delta, ChangeMode mode) {
-        for (PacketWrapper<?> packet : packets.getArray(event)) {
+        for (PacketWrapper<?> packet : getExpr().getArray(event)) {
             if (!(packet instanceof WrapperPlayServerTeams team)) {
                 continue;
             }
@@ -100,7 +98,7 @@ public abstract class TeamPropertyExpression<T> extends SimpleExpression<T> {
 
     @Override
     public boolean isSingle() {
-        return field() != TeamField.ENTRIES && packets.isSingle();
+        return field() != TeamField.ENTRIES && getExpr().isSingle();
     }
 
     @Override
@@ -111,6 +109,6 @@ public abstract class TeamPropertyExpression<T> extends SimpleExpression<T> {
 
     @Override
     public String toString(Event event, boolean debug) {
-        return "packet team " + field().key() + " of " + packets.toString(event, debug);
+        return "packet team " + field().key() + " of " + getExpr().toString(event, debug);
     }
 }

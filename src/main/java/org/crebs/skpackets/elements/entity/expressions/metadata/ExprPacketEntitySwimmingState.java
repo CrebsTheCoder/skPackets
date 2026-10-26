@@ -15,7 +15,7 @@ public final class ExprPacketEntitySwimmingState extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntitySwimmingState.class,
                         Object.class,
-                        "[meta field] swimming [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] swimming [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Swimming State")
                 .description(
                         "The packet entity swimming state property. Supports set, delete and"

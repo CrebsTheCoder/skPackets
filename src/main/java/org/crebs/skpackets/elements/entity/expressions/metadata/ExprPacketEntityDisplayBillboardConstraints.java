@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayBillboardConstraints extends ExprPacke
                 .newSimpleExpression(
                         ExprPacketEntityDisplayBillboardConstraints.class,
                         Object.class,
-                        "[meta field] display billboard [constraints] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display billboard [constraints] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Billboard Constraints")
                 .description(
                         "The packet entity display billboard constraints property. Supports"

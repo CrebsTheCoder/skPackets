@@ -15,7 +15,7 @@ public final class ExprPacketEntityEntityId extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityEntityId.class,
                         Object.class,
-                        "[meta field] [entity] id of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] [entity] id of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Entity ID")
                 .description("The numeric network entity ID. Read-only. Read-only.")
                 .examples(

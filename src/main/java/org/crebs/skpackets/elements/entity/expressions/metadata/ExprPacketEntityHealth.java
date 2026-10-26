@@ -15,7 +15,7 @@ public final class ExprPacketEntityHealth extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityHealth.class,
                         Object.class,
-                        "[meta field] (health|hp) of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] (health|hp) of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Health")
                 .description(
                         "The living entity health metadata value. Supports set, delete and reset;"

@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayUseDefaultBackgroundState extends Expr
                 .newSimpleExpression(
                         ExprPacketEntityDisplayUseDefaultBackgroundState.class,
                         Object.class,
-                        "[meta field] display use default background [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display use default background [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Use Default Background State")
                 .description(
                         "The packet entity display use default background state property."

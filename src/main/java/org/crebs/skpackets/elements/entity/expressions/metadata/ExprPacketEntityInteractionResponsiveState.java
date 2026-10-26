@@ -15,7 +15,7 @@ public final class ExprPacketEntityInteractionResponsiveState extends ExprPacket
                 .newSimpleExpression(
                         ExprPacketEntityInteractionResponsiveState.class,
                         Object.class,
-                        "[meta field] interaction responsive [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] interaction responsive [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Interaction Responsive State")
                 .description(
                         "The packet entity interaction responsive state property. Supports"

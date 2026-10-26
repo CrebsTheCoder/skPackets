@@ -8,8 +8,8 @@ public final class ExprTeamEntries extends TeamPropertyExpression<Object> {
 
     public static void register(Registration registration) {
         registration
-                .newSimpleExpression(
-                        ExprTeamEntries.class, Object.class, "(fake|packet) team entries of %packets%")
+                .newPropertyExpression(
+                        ExprTeamEntries.class, Object.class, "(fake|packet) team entries", "packets")
                 .name("Team Entries")
                 .description(
                         "The player names or entity UUID strings assigned to the team. Supports"

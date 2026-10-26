@@ -15,7 +15,7 @@ public final class ExprPacketEntityItem extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityItem.class,
                         Object.class,
-                        "[meta field] item of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] item of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Item")
                 .description(
                         "The packet entity item property. Supports set, delete and reset;"

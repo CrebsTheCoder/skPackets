@@ -15,7 +15,7 @@ public final class ExprPacketEntityElytraFlyingState extends ExprPacketEntityFie
                 .newSimpleExpression(
                         ExprPacketEntityElytraFlyingState.class,
                         Object.class,
-                        "[meta field] elytra flying [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] elytra flying [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Elytra Flying State")
                 .description(
                         "The packet entity elytra flying state property. Supports set,"

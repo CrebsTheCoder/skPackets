@@ -15,7 +15,7 @@ public final class ExprPacketEntityInteractionHeight extends ExprPacketEntityFie
                 .newSimpleExpression(
                         ExprPacketEntityInteractionHeight.class,
                         Object.class,
-                        "[meta field] interaction height of [(fake|packet) entit(y|ies)]"
+                        "meta [field] interaction height of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Interaction Height")
                 .description(

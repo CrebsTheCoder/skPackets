@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayItemTransform extends ExprPacketEntity
                 .newSimpleExpression(
                         ExprPacketEntityDisplayItemTransform.class,
                         Object.class,
-                        "[meta field] display item transform of [(fake|packet) entit(y|ies)]"
+                        "meta [field] display item transform of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Display Item Transform")
                 .description(

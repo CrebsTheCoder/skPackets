@@ -15,7 +15,7 @@ public final class ExprPacketEntityInteractionWidth extends ExprPacketEntityFiel
                 .newSimpleExpression(
                         ExprPacketEntityInteractionWidth.class,
                         Object.class,
-                        "[meta field] interaction width of [(fake|packet) entit(y|ies)]"
+                        "meta [field] interaction width of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Interaction Width")
                 .description(

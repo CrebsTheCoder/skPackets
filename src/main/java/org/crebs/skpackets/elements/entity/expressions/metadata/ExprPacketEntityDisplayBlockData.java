@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayBlockData extends ExprPacketEntityFiel
                 .newSimpleExpression(
                         ExprPacketEntityDisplayBlockData.class,
                         Object.class,
-                        "[meta field] display block (state|data) of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display block (state|data) of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display Block Data")
                 .description(
                         "The packet entity display block data property. Supports set, delete"

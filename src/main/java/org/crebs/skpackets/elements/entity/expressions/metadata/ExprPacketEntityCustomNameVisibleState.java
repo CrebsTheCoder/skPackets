@@ -15,7 +15,7 @@ public final class ExprPacketEntityCustomNameVisibleState extends ExprPacketEnti
                 .newSimpleExpression(
                         ExprPacketEntityCustomNameVisibleState.class,
                         Object.class,
-                        "[meta field] custom name visible [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] custom name visible [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Custom Name Visible State")
                 .description(
                         "Controls whether the custom name is always visible. Supports set, delete"

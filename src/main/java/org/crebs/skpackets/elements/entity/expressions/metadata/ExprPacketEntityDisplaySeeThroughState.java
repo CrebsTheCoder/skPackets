@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplaySeeThroughState extends ExprPacketEnti
                 .newSimpleExpression(
                         ExprPacketEntityDisplaySeeThroughState.class,
                         Object.class,
-                        "[meta field] display see through [state] of [(fake|packet) entit(y|ies)] %packetentities%")
+                        "meta [field] display see through [state] of (fake|packet) entity %packetentities%")
                 .name("Packet Entity - Display See Through State")
                 .description(
                         "The packet entity display see through state property. Supports set,"

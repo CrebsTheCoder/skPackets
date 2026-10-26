@@ -16,8 +16,8 @@ public final class ExprPacketEntityDisplayTeleportInterpolationDuration
                 .newSimpleExpression(
                         ExprPacketEntityDisplayTeleportInterpolationDuration.class,
                         Object.class,
-                        "[meta field] display teleport interpolation duration of [(fake|packet)"
-                                + " entit(y|ies)] %packetentities%")
+                        "meta [field] display teleport interpolation duration of (fake|packet)"
+                                + " entity %packetentities%")
                 .name("Packet Entity - Display Teleport Interpolation Duration")
                 .description(
                         "The packet entity display teleport interpolation duration property."

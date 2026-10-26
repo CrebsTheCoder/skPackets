@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayInterpolationDelay extends ExprPacketE
                 .newSimpleExpression(
                         ExprPacketEntityDisplayInterpolationDelay.class,
                         Object.class,
-                        "[meta field] display interpolation delay of [(fake|packet) entit(y|ies)]"
+                        "meta [field] display interpolation delay of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Display Interpolation Delay")
                 .description(

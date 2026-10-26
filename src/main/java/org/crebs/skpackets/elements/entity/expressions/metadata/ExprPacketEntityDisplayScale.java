@@ -15,7 +15,7 @@ public final class ExprPacketEntityDisplayScale extends ExprPacketEntityField {
                 .newSimpleExpression(
                         ExprPacketEntityDisplayScale.class,
                         Object.class,
-                        "[meta field] display scale of [(fake|packet) entit(y|ies)]"
+                        "meta [field] display scale of (fake|packet) entity"
                                 + " %packetentities%")
                 .name("Packet Entity - Display Scale")
                 .description(

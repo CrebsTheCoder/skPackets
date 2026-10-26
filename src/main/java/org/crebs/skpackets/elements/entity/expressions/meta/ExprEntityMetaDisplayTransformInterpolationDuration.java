@@ -40,9 +40,7 @@ public final class ExprEntityMetaDisplayTransformInterpolationDuration extends E
                         "[(fake|packet)] [entity] meta [field] display transform interpolation"
                                 + " duration",
                         "entitymeta")
-                .name(
-                        "Entity Meta - display transform interpolation duration (display transform"
-                                + " interpolation duration, of)")
+                .name("Entity Meta - Display Transform Interpolation Duration")
                 .description(
                         "The display transform interpolation duration property. Value type:"
                             + " Timespan. Applies to display and supported subclasses. Supports"

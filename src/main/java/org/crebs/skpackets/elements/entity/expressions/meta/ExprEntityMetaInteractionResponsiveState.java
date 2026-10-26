@@ -39,9 +39,7 @@ public final class ExprEntityMetaInteractionResponsiveState extends ExprMetaFiel
                         Object.class,
                         "[(fake|packet)] [entity] meta [field] interaction responsive [state]",
                         "entitymeta")
-                .name(
-                        "Entity Meta - interaction responsive state (interaction responsive state,"
-                                + " of)")
+                .name("Entity Meta - Interaction Responsive State")
                 .description(
                         "The interaction responsive state property. Value type: Boolean. Applies to"
                             + " interaction and supported subclasses. Supports set. When editing"

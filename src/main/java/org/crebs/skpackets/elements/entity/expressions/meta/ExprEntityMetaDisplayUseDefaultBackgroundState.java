@@ -39,9 +39,7 @@ public final class ExprEntityMetaDisplayUseDefaultBackgroundState extends ExprMe
                         Object.class,
                         "[(fake|packet)] [entity] meta [field] display use default background [state]",
                         "entitymeta")
-                .name(
-                        "Entity Meta - display use default background state (display use default"
-                                + " background state, of)")
+                .name("Entity Meta - Display Use Default Background State")
                 .description(
                         "The display use default background state property. Value type: Boolean."
                             + " Applies to text display and supported subclasses. Supports set."

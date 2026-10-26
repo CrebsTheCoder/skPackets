@@ -39,9 +39,7 @@ public final class ExprEntityMetaDisplayBillboardConstraints extends ExprMetaFie
                         Object.class,
                         "[(fake|packet)] [entity] meta [field] display billboard [constraints]",
                         "entitymeta")
-                .name(
-                        "Entity Meta - display billboard constraints (display billboard"
-                                + " constraints, of)")
+                .name("Entity Meta - Display Billboard Constraints")
                 .description(
                         "The display billboard constraints property. Value type: Display.Billboard."
                             + " Applies to display and supported subclasses. Supports set. When"

@@ -4,3 +4,4 @@ main: org.crebs.skpackets.SkPackets
 api-version: '26.3'
 description: A packet addon for Skript
 depend: [Skript, packetevents]
+softdepend: [SkBee]

@@ -11,7 +11,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.SkPackets;
-import org.crebs.skpackets.api.metadata.PacketEntityField;
+import org.crebs.skpackets.api.entity.metadata.PacketEntityField;
 import org.skriptlang.skript.bukkit.entity.EntityData;
 import org.skriptlang.skript.lang.entry.EntryValidator;
 import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
@@ -22,12 +22,24 @@ final class PacketEntitySpawn {
     private static final EntryValidator ENTRIES =
             EntryValidator.builder()
                     .addEntryData(
-                            new ExpressionEntryData<>("entity", null, false, EntityData.class))
+                            new ExpressionEntryData<EntityData>(
+                                    "entity", null, false, EntityData.class) {
+                                @Override
+                                protected Expression<? extends EntityData> getValue(String value) {
+                                    EntityData<?> literal = EntityData.parse(value);
+                                    return literal != null
+                                            ? new ch.njol.skript.lang.util.SimpleLiteral<>(
+                                                    literal, false)
+                                            : super.getValue(value);
+                                }
+                            })
                     .addEntryData(new ExpressionEntryData<>("viewers", null, false, Player.class))
                     .addEntryData(
                             new ExpressionEntryData<>("location", null, false, Location.class))
                     .addEntryData(
-                            new ExpressionEntryData<>("persistent", null, true, Boolean.class))
+                            new ExpressionEntryData<>(
+                                    "skin", null, true, org.crebs.skpackets.api.entity.Skin.class))
+                    .addEntryData(new ExpressionEntryData<>("username", null, true, String.class))
                     .addSection("meta field", true)
                     .build();
     private static final EntryValidator META_ENTRIES = metadataEntries();
@@ -49,10 +61,13 @@ final class PacketEntitySpawn {
     private Expression<Location> location;
     private Expression<Player> viewers;
     private Expression<EntityData<?>> type;
-    private Expression<Boolean> persistent;
+    private boolean persistent;
+    private Expression<org.crebs.skpackets.api.entity.Skin> skin;
+    private Expression<String> username;
 
     @SuppressWarnings("unchecked")
-    boolean init(SectionNode node) {
+    boolean init(SectionNode node, boolean persistent) {
+        this.persistent = persistent;
         if (node == null) {
             return error(
                     "A new packet entity requires a section with entity, viewers and location"
@@ -75,12 +90,10 @@ final class PacketEntitySpawn {
             return error("location must be one location");
         }
 
-        if (entries.hasEntry("persistent")) {
-            persistent = (Expression<Boolean>) entries.getOptional("persistent", false);
-            if (persistent == null || !persistent.isSingle()) {
-                return error("persistent must be one boolean");
-            }
-        }
+        skin = (Expression<org.crebs.skpackets.api.entity.Skin>) entries.getOptional("skin", false);
+        username = (Expression<String>) entries.getOptional("username", false);
+        if ((skin != null && !skin.isSingle()) || (username != null && !username.isSingle()))
+            return error("skin and username require one value");
         SectionNode metaNode = (SectionNode) entries.getOptional("meta field", false);
         if (metaNode == null) {
             return true;
@@ -123,6 +136,7 @@ final class PacketEntitySpawn {
         }
         EntityData<?> data = type.getSingle(event);
         if (data == null) {
+            Skript.error("The packet entity's entity entry evaluated to no entity type.");
             return null;
         }
         EntityType entityType =
@@ -135,8 +149,17 @@ final class PacketEntitySpawn {
                     "This packet entity requires a concrete entity type, such as zombie or pig.");
             return null;
         }
-        Boolean keep = persistent == null ? Boolean.TRUE : persistent.getSingle(event);
-        if (keep == null) {
+        var texture = skin == null ? null : skin.getSingle(event);
+        String name = username == null ? "NPC" : username.getSingle(event);
+        if (entityType == EntityType.PLAYER
+                && (texture == null || name == null || !name.matches("[A-Za-z0-9_]{1,16}"))) {
+            Skript.error(
+                    "Player entities require a skin and a username of 1 to 16 letters, numbers or"
+                            + " underscores.");
+            return null;
+        }
+        if (entityType != EntityType.PLAYER && (skin != null || username != null)) {
+            Skript.error("skin and username are only available for player entities.");
             return null;
         }
         try {
@@ -155,8 +178,18 @@ final class PacketEntitySpawn {
                             entityType,
                             at,
                             Arrays.asList(players),
-                            keep,
-                            entity -> values.forEach((field, value) -> field.set(entity, value)));
+                            persistent,
+                            entity -> {
+                                if (entity
+                                        instanceof
+                                        me.tofaa.entitylib.wrapper.WrapperPlayer player) {
+                                    player.setProfile(
+                                            new com.github.retrooper.packetevents.protocol.player
+                                                    .UserProfile(player.getUuid(), name));
+                                    player.setTextureProperties(texture.properties());
+                                }
+                                values.forEach((field, value) -> field.set(entity, value));
+                            });
         } catch (IllegalArgumentException exception) {
             Skript.error(exception.getMessage());
             return null;

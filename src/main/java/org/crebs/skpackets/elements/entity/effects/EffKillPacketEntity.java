@@ -15,10 +15,22 @@ public class EffKillPacketEntity extends Effect {
 
     public static void register(Registration registration) {
         registration
-                .newEffect(EffKillPacketEntity.class, "kill packet entity %packetentity%")
+                .newEffect(
+                        EffKillPacketEntity.class,
+                        "kill (fake|packet) [entit(y|ies)] %packetentities%")
                 .name("Kill Packet Entity")
                 .description("Kills the packet entity")
-                .examples("kill packet entity {_entity}")
+                .examples(
+                        """
+                        command /vanishing-mob:
+                            trigger:
+                                set {_entity} to a new packet entity:
+                                    entity: zombie
+                                    location: location of player
+                                    viewers: player
+                                wait 5 seconds
+                                kill packet entity {_entity}
+                        """)
                 .since("1.0.0")
                 .register();
     }
@@ -38,13 +50,10 @@ public class EffKillPacketEntity extends Effect {
 
     @Override
     protected void execute(Event event) {
-        WrapperEntity entity = entityInput.getSingle(event);
-
-        if (entity == null) {
-            return;
+        var manager = org.crebs.skpackets.SkPackets.getInstance().getPacketEntities();
+        for (WrapperEntity entity : entityInput.getArray(event)) {
+            manager.remove(entity);
         }
-
-        org.crebs.skpackets.SkPackets.getInstance().getPacketEntities().remove(entity);
     }
 
     @Override

@@ -26,13 +26,11 @@ import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
-
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.shanebeee.skr.Registration;
 import com.google.common.primitives.Primitives;
-
 import org.bukkit.event.Event;
 import org.crebs.skpackets.api.general.packet.PacketSendOrReceiveEvent;
 import org.crebs.skpackets.api.util.field.FieldAccessor;
@@ -44,7 +42,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -55,25 +52,8 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
     public static void register(Registration reg) {
         StringBuilder description = new StringBuilder();
         description.append("Gets or sets a field's value from a packet by its name.\n\n");
-        description.append("### Available Packets and their fields\n");
-
-        Collection<FieldSchema<PacketTypeCommon, PacketWrapper<?>>> schemas =
-                PacketFieldRegistry.INSTANCE.getAllSchemas();
-        for (FieldSchema<PacketTypeCommon, PacketWrapper<?>> schema : schemas) {
-            String fieldLines = schema.getReadableFields();
-            if (!fieldLines.isEmpty()) {
-                description
-                        .append("* **")
-                        .append(
-                                schema.type()
-                                        .getName()
-                                        .toLowerCase(Locale.ENGLISH)
-                                        .replace("_", " "))
-                        .append("** fields:\n")
-                        .append(fieldLines)
-                        .append("\n");
-            }
-        }
+        description.append(FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
+                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ")));
 
         reg.newPropertyExpression(
                         ExprPacketField.class,

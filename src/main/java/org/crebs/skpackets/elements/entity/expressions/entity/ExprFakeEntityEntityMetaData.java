@@ -24,13 +24,14 @@ import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
-import com.github.shanebeee.skr.Registration;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.shanebeee.skr.Registration;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import me.tofaa.entitylib.wrapper.WrapperEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.api.entity.metadata.EntityMeta;
+
 import java.util.ArrayList;
 
 public final class ExprFakeEntityEntityMetaData extends PropertyExpression<Object, EntityMeta> {
@@ -55,9 +56,8 @@ public final class ExprFakeEntityEntityMetaData extends PropertyExpression<Objec
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean init(Expression<?>[] expressions, int pattern, Kleenean delayed, SkriptParser.ParseResult result) {
-        setExpr((Expression<Object>) expressions[0]);
+        setExpr(expressions[0]);
         return true;
     }
 

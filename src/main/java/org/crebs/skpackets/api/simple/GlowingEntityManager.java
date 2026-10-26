@@ -197,7 +197,7 @@ public class GlowingEntityManager {
         for (UUID receiverUUID : receivers) {
             Player receiver = Bukkit.getPlayer(receiverUUID);
             if (receiver != null && receiver.isOnline()) {
-                PacketEvents.getAPI().getPlayerManager().getUser(receiver).sendPacket(packet);
+                PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, packet);
             }
         }
     }

@@ -1,15 +1,25 @@
 package org.crebs.skpackets.api.simple;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
-
-import org.bukkit.*;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMultiBlockChange;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
-import org.bukkit.event.player.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -144,10 +154,10 @@ public final class FakeBlockManager extends PacketListenerAbstract
     }
 
     @Override
-    public void onPacketSend(PacketSendEvent event) {
+    public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (closed || event.isCancelled()) return;
         UUID id = event.getUser().getUUID();
-        if (id == null || !active.contains(id)) return;
+        if (!active.contains(id)) return;
         UUID world = worlds.get(id);
         if (world == null) return;
         if (event.getPacketType() == PacketType.Play.Server.CHUNK_DATA) {
@@ -176,7 +186,7 @@ public final class FakeBlockManager extends PacketListenerAbstract
                 if (positions.contains(new Position(block.getX(), block.getY(), block.getZ()))) {
                     if (remaining == null) {
                         remaining = new ArrayList<>(updates.length);
-                        for (int j = 0; j < i; j++) remaining.add(updates[j]);
+                        remaining.addAll(Arrays.asList(updates).subList(0, i));
                     }
                 } else if (remaining != null) remaining.add(block);
             }

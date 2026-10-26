@@ -1,16 +1,22 @@
 package org.crebs.skpackets.api.simple;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
-
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPlayerInventory;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -45,13 +51,12 @@ public final class FakeInventoryManager extends PacketListenerAbstract
     }
 
     @Override
-    public void onPacketSend(PacketSendEvent event) {
+    public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (closed || event.isCancelled()) return;
         if (event.getPacketType() != PacketType.Play.Server.WINDOW_ITEMS
                 && event.getPacketType() != PacketType.Play.Server.SET_SLOT
                 && event.getPacketType() != PacketType.Play.Server.SET_PLAYER_INVENTORY) return;
         UUID id = event.getUser().getUUID();
-        if (id == null) return;
         if (event.getPacketType() == PacketType.Play.Server.SET_PLAYER_INVENTORY) {
             var packet = new WrapperPlayServerSetPlayerInventory(event);
             var values = overrides.get(new Key(id, 0));
@@ -221,12 +226,11 @@ public final class FakeInventoryManager extends PacketListenerAbstract
     }
 
     @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
+    public void onPacketReceive(@org.jetbrains.annotations.NotNull PacketReceiveEvent event) {
         if (closed
                 || event.isCancelled()
                 || event.getPacketType() != PacketType.Play.Client.CLICK_WINDOW) return;
         UUID id = event.getUser().getUUID();
-        if (id == null) return;
         Window tracked = containers.get(id);
         if (!overrides.containsKey(new Key(id, 0))
                 && (tracked == null || !overrides.containsKey(new Key(id, tracked.id())))) return;

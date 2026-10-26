@@ -1,12 +1,12 @@
 package org.crebs.skpackets.elements.team.effects;
 
 import ch.njol.skript.Skript;
-import ch.njol.skript.lang.*;
+import ch.njol.skript.lang.Effect;
+import ch.njol.skript.lang.Expression;
+import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
-
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.shanebeee.skr.Registration;
-
 import org.bukkit.event.Event;
 import org.crebs.skpackets.SkPackets;
 import org.crebs.skpackets.elements.team.PacketTeam;

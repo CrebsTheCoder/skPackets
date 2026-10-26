@@ -3,18 +3,21 @@ package org.crebs.skpackets.elements.team.section;
 import ch.njol.skript.Skript;
 import ch.njol.skript.config.SectionNode;
 import ch.njol.skript.expressions.base.SectionExpression;
-import ch.njol.skript.lang.*;
+import ch.njol.skript.lang.Expression;
+import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.lang.TriggerItem;
 import ch.njol.util.Kleenean;
-
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.shanebeee.skr.Registration;
-
 import org.bukkit.event.Event;
 import org.crebs.skpackets.elements.team.TeamField;
 import org.skriptlang.skript.lang.entry.EntryValidator;
 import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 public class SecNewPacketTeam extends SectionExpression<PacketWrapper> {
 

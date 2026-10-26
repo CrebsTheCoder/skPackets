@@ -22,12 +22,12 @@ package org.crebs.skpackets.elements.entity.field.meta;
 
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
-
 import org.crebs.skpackets.api.entity.metadata.EntityMeta;
 import org.crebs.skpackets.api.entity.metadata.PacketEntityField;
-import org.crebs.skpackets.api.util.field.*;
+import org.crebs.skpackets.api.util.field.BaseFieldRegistry;
+import org.crebs.skpackets.api.util.field.FieldRegistrar;
 
-import java.util.*;
+import java.util.List;
 
 public final class MetaFieldRegistry extends BaseFieldRegistry<EntityType, EntityMeta> {
     public static final MetaFieldRegistry INSTANCE = new MetaFieldRegistry();

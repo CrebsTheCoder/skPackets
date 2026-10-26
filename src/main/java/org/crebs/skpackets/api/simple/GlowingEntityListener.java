@@ -32,7 +32,7 @@ import java.util.UUID;
 public class GlowingEntityListener implements PacketListener {
 
     @Override
-    public void onPacketSend(PacketSendEvent event) {
+    public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (!GlowingEntityManager.hasGlowingEntities()
                 || !event.getPacketType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
             return;

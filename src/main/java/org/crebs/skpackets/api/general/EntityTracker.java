@@ -111,9 +111,6 @@ public class EntityTracker implements PacketListener {
 
     @Override
     public void onUserDisconnect(UserDisconnectEvent event) {
-        if (event.getUser().getUUID() == null) {
-            return;
-        }
         PLAYER_ENTITIES.remove(event.getUser().getUUID());
     }
 }

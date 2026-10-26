@@ -189,8 +189,8 @@ public class ClientBoundPacketFieldRegistrar implements FieldRegistrar {
                                                 values.getRequired(
                                                         "absolute position", Vector.class)),
                                         ConversionUtil.toPeVectorI(
-                                                values.getOptional(
-                                                        "relative position", Vector.class))))
+                                                values.getOrElse(
+                                                        "relative position", Vector.class, new Vector()))))
                 .build();
 
         PacketFieldRegistry.INSTANCE

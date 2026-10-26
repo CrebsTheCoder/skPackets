@@ -21,12 +21,7 @@
 package org.crebs.skpackets.elements.simple;
 
 import com.github.shanebeee.skr.Registration;
-
-import org.crebs.skpackets.elements.simple.effects.EffDisplayedSkin;
-import org.crebs.skpackets.elements.simple.effects.EffFakeBlock;
-import org.crebs.skpackets.elements.simple.effects.EffFakeEquipment;
-import org.crebs.skpackets.elements.simple.effects.EffFakeInventorySlot;
-import org.crebs.skpackets.elements.simple.effects.EffGlow;
+import org.crebs.skpackets.elements.simple.effects.*;
 import org.crebs.skpackets.elements.simple.expressions.ExprGlowReceivers;
 
 public final class SimpleElementRegistration {

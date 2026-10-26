@@ -2,24 +2,25 @@ package org.crebs.skpackets.api.entity.metadata;
 
 import com.github.retrooper.packetevents.util.Quaternion4f;
 import com.github.retrooper.packetevents.util.Vector3f;
-
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-
-import me.tofaa.entitylib.meta.*;
+import me.tofaa.entitylib.meta.MetaField;
+import me.tofaa.entitylib.meta.MetaFields;
+import me.tofaa.entitylib.meta.MetaFlag;
 import me.tofaa.entitylib.meta.enums.BillboardConstraints;
 import me.tofaa.entitylib.meta.enums.ItemDisplayContext;
 import me.tofaa.entitylib.wrapper.WrapperEntity;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public enum PacketEntityField {
     ENTITY_ID(Number.class, "entity id", "id"),
@@ -302,6 +303,12 @@ public enum PacketEntityField {
         return defaultValue;
     }
 
+    private static Component textComponent(Object value) {
+        if (value instanceof Component component) return component;
+        if (value instanceof String text) return Component.text(text);
+        throw new IllegalArgumentException("Text metadata requires String or Component");
+    }
+
     public void reset(WrapperEntity entity) {
         set(entity, defaultValue());
     }
@@ -320,7 +327,10 @@ public enum PacketEntityField {
                     aliases.getFirst() + " requires " + valueType.getSimpleName());
         }
         if (flag != null) {
-            entity.setFlag(flag, (Boolean) value);
+            if (!(value instanceof Boolean enabled)) {
+                throw new IllegalArgumentException(aliases.getFirst() + " requires Boolean");
+            }
+            entity.setFlag(flag, enabled);
             return;
         }
         Object converted =
@@ -334,14 +344,14 @@ public enum PacketEntityField {
                     case INTEGER -> integer((Number) value);
                     case FLOAT -> finiteFloat((Number) value);
                     case TEXT ->
-                            value instanceof Component ? value : Component.text((String) value);
+                            value instanceof Component ? value : textComponent(value);
                     case OPTIONAL_TEXT ->
                             value instanceof String text && text.isEmpty()
                                     ? Optional.empty()
                                     : Optional.of(
                                             value instanceof Component
                                                     ? value
-                                                    : Component.text((String) value));
+                                                    : textComponent(value));
                     case VECTOR -> {
                         Vector v = (Vector) value;
                         yield new Vector3f(

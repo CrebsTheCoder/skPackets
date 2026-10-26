@@ -60,7 +60,7 @@ public class FakeBaseEntityFieldRegistrar implements FieldRegistrar {
                         org.bukkit.Location.class,
                         w ->
                                 new org.bukkit.Location(
-                                        Bukkit.getWorld(w.getWorld()),
+                                        w.getWorld() == null ? null : Bukkit.getWorld(w.getWorld()),
                                         w.getX(),
                                         w.getY(),
                                         w.getZ(),

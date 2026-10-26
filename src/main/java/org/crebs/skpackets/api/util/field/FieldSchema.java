@@ -39,6 +39,19 @@ public record FieldSchema<K, O>(
         return null;
     }
 
+    public static <K, O> String describe(
+            Iterable<FieldSchema<K, O>> schemas, java.util.function.Function<K, String> name) {
+        StringBuilder description = new StringBuilder("### Available Packets and their fields\n");
+        for (var schema : schemas) {
+            String fields = schema.getReadableFields();
+            if (!fields.isEmpty()) {
+                description.append("* **").append(name.apply(schema.type()))
+                        .append("** fields:\n").append(fields).append("\n");
+            }
+        }
+        return description.toString();
+    }
+
     public String getReadableFields() {
         List<String> fieldStrings = new ArrayList<>();
         for (FieldAccessor<O, ?> accessor : accessors) {

@@ -54,20 +54,7 @@ public class ConstructionContext<K, BaseType> {
     }
 
     public <T> @Nullable T getOptional(String fieldName, Class<? extends T> clazz) {
-        FieldAccessor<BaseType, ?> targetAccessor = null;
-        for (FieldAccessor<BaseType, ?> accessor : registeredAccessors) {
-            if (accessor.matches(fieldName)) {
-                targetAccessor = accessor;
-                break;
-            }
-        }
-
-        if (targetAccessor == null) {
-            throw new IllegalArgumentException(
-                    "Attempted to look up field '"
-                            + fieldName
-                            + "', but it is not defined in this schema.");
-        }
+        FieldAccessor<BaseType, ?> targetAccessor = findAccessor(fieldName);
         if (arguments.containsKey(targetAccessor.name())) {
             return clazz.cast(arguments.get(targetAccessor.name()));
         }
@@ -83,6 +70,24 @@ public class ConstructionContext<K, BaseType> {
         }
 
         return null;
+    }
+
+    private FieldAccessor<BaseType, ?> findAccessor(String fieldName) {
+        FieldAccessor<BaseType, ?> accessorFound = null;
+        for (FieldAccessor<BaseType, ?> accessor : registeredAccessors) {
+            if (accessor.matches(fieldName)) {
+                accessorFound = accessor;
+                break;
+            }
+        }
+
+        if (accessorFound == null) {
+            throw new IllegalArgumentException(
+                    "Attempted to look up field '"
+                            + fieldName
+                            + "', but it is not defined in this schema.");
+        }
+        return accessorFound;
     }
 
     public <T> T getOrElse(String fieldName, Class<T> clazz, T defaultValue) {

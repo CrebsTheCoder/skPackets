@@ -1,17 +1,8 @@
 package org.crebs.skpackets.elements.entity;
 
 import com.github.shanebeee.skr.Registration;
-
-import org.crebs.skpackets.elements.entity.effects.EffKillPacketEntity;
-import org.crebs.skpackets.elements.entity.effects.EffPacketEntityViewers;
-import org.crebs.skpackets.elements.entity.effects.EffRideFakeEntity;
-import org.crebs.skpackets.elements.entity.effects.EffSpawnFakeEntity;
-import org.crebs.skpackets.elements.entity.effects.EffTeleportPacketEntity;
-import org.crebs.skpackets.elements.entity.expressions.ExprEntityId;
-import org.crebs.skpackets.elements.entity.expressions.ExprFakeEntitiesAll;
-import org.crebs.skpackets.elements.entity.expressions.ExprFakeEntityFromId;
-import org.crebs.skpackets.elements.entity.expressions.ExprFakeEntityFromUuid;
-import org.crebs.skpackets.elements.entity.expressions.ExprFakeEquipment;
+import org.crebs.skpackets.elements.entity.effects.*;
+import org.crebs.skpackets.elements.entity.expressions.*;
 import org.crebs.skpackets.elements.entity.expressions.entity.FakeEntityExpressions;
 import org.crebs.skpackets.elements.entity.expressions.meta.MetaExpressions;
 import org.crebs.skpackets.elements.entity.expressions.metadata.NativeMetadataExpressions;

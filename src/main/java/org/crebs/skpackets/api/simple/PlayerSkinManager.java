@@ -23,12 +23,7 @@ package org.crebs.skpackets.api.simple;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
-import com.github.retrooper.packetevents.protocol.player.Equipment;
-import com.github.retrooper.packetevents.protocol.player.EquipmentSlot;
-import com.github.retrooper.packetevents.protocol.player.GameMode;
-import com.github.retrooper.packetevents.protocol.player.TextureProperty;
-import com.github.retrooper.packetevents.protocol.player.User;
-import com.github.retrooper.packetevents.protocol.player.UserProfile;
+import com.github.retrooper.packetevents.protocol.player.*;
 import com.github.retrooper.packetevents.protocol.world.Difficulty;
 import com.github.retrooper.packetevents.protocol.world.WorldBlockPosition;
 import com.github.retrooper.packetevents.protocol.world.dimension.DimensionType;
@@ -38,9 +33,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChangeGameState.Reason;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate.PlayerInfo;
 import com.google.common.hash.Hashing;
-
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Registry;
 import org.bukkit.World;
@@ -195,7 +188,7 @@ public class PlayerSkinManager {
         for (var attribute : Registry.ATTRIBUTE) {
             var instance = target.getAttribute(attribute);
             var packetAttribute = Attributes.getByName(attribute.getKey().toString());
-            if (instance == null || packetAttribute == null) continue;
+            if (instance == null) continue;
             if (viewer.equals(target)
                     && attribute == Attribute.MAX_HEALTH
                     && target.isHealthScaled()) {
@@ -257,6 +250,7 @@ public class PlayerSkinManager {
 
     private static void reRegisterProfile(Player target, Player viewer) {
         User targetUser = PacketEvents.getAPI().getPlayerManager().getUser(target);
+        if (targetUser == null) return;
 
         List<TextureProperty> properties;
         Skin customSkin = getSkinForViewer(target.getUniqueId(), viewer.getUniqueId());
@@ -293,6 +287,8 @@ public class PlayerSkinManager {
 
     static void refreshPlayer(Player player) {
         User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
+        var worldState = PlayerSkinRefresh.worldState(player);
+        if (user == null || worldState == null) return;
 
         World world = player.getWorld();
         DimensionType dimensionType = user.getDimensionType();
@@ -319,8 +315,8 @@ public class PlayerSkinManager {
                         hashedSeed,
                         gameMode,
                         prevGameMode,
-                        world.getWorldType() == org.bukkit.WorldType.DEBUG_ALL_BLOCK_STATES,
-                        world.getWorldType() == org.bukkit.WorldType.FLAT,
+                        worldState.debug(),
+                        worldState.flat(),
                         WrapperPlayServerRespawn.KEEP_ALL_DATA,
                         position,
                         null);
@@ -342,7 +338,8 @@ public class PlayerSkinManager {
         send(
                 player,
                 new WrapperPlayServerPlayerAbilities(
-                        player.isInvulnerable()
+                        player.isInvulnerableTo(
+                                org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.GENERIC).build())
                                 || player.getGameMode() == org.bukkit.GameMode.CREATIVE
                                 || player.getGameMode() == org.bukkit.GameMode.SPECTATOR,
                         player.isFlying(),
@@ -368,10 +365,11 @@ public class PlayerSkinManager {
                 player,
                 new WrapperPlayServerSetExperience(
                         player.getExp(), player.getLevel(), player.getTotalExperience()));
-        double maxHealth = player.getAttribute(Attribute.MAX_HEALTH).getValue();
+        var healthAttribute = player.getAttribute(Attribute.MAX_HEALTH);
+        double maxHealth = healthAttribute == null ? 0 : healthAttribute.getValue();
         float health =
                 (float)
-                        (player.isHealthScaled()
+                        (player.isHealthScaled() && maxHealth > 0
                                 ? player.getHealth() * player.getHealthScale() / maxHealth
                                 : player.getHealth());
         send(

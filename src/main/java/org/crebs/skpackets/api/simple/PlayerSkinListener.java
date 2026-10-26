@@ -20,8 +20,6 @@
  */
 package org.crebs.skpackets.api.simple;
 
-import static com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER;
-
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -29,8 +27,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate.PlayerInfo;
-
 import org.crebs.skpackets.api.entity.Skin;
+
+import static com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER;
 
 public class PlayerSkinListener implements PacketListener {
 
@@ -52,7 +51,6 @@ public class PlayerSkinListener implements PacketListener {
         for (int i = 0; i < entries.size(); i++) {
             PlayerInfo entry = entries.get(i);
             UserProfile profile = entry.getGameProfile();
-            if (profile == null) continue;
             Skin skin =
                     PlayerSkinManager.getPersistentSkinForViewer(
                             profile.getUUID(), viewer.getUUID());

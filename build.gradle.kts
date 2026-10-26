@@ -32,11 +32,16 @@ dependencies {
         isTransitive = false
     }
     implementation("com.github.ShaneBeee:SkriptRegistration:1.5.0")
-    compileOnly("io.papermc.paper:paper-api:26.3.build.195-stable")
+    compileOnly("io.papermc.paper:paper-api:26.3.build.195-stable") {
+        exclude(group = "org.apache.maven", module = "maven-resolver-provider")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-api")
+    }
     compileOnly("com.github.SkriptLang:Skript:2.17.1") {
         isTransitive = false
     }
-    compileOnly("com.github.retrooper:packetevents-spigot:2.14.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.14.0") {
+        exclude(group = "io.netty")
+    }
 }
 
 java {

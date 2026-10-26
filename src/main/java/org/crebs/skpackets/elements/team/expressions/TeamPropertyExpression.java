@@ -2,13 +2,12 @@ package org.crebs.skpackets.elements.team.expressions;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
-import ch.njol.skript.lang.*;
+import ch.njol.skript.lang.Expression;
+import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
-
 import org.bukkit.event.Event;
 import org.crebs.skpackets.elements.team.TeamField;
 
@@ -83,7 +82,7 @@ public abstract class TeamPropertyExpression<T> extends SimpleExpression<T> {
                             entries.addAll(change);
                         }
                         case ADD -> entries.addAll(change);
-                        case REMOVE -> entries.removeAll(change);
+                        case REMOVE -> change.forEach(entries::remove);
                         case DELETE, RESET -> entries.clear();
                         default -> {
                             return;

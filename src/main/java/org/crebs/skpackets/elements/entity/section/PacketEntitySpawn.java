@@ -3,9 +3,7 @@ package org.crebs.skpackets.elements.entity.section;
 import ch.njol.skript.Skript;
 import ch.njol.skript.config.SectionNode;
 import ch.njol.skript.lang.Expression;
-
 import me.tofaa.entitylib.wrapper.WrapperEntity;
-
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -16,7 +14,9 @@ import org.skriptlang.skript.bukkit.entity.EntityData;
 import org.skriptlang.skript.lang.entry.EntryValidator;
 import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 final class PacketEntitySpawn {
     private static final EntryValidator ENTRIES =
@@ -182,7 +182,8 @@ final class PacketEntitySpawn {
                             entity -> {
                                 if (entity
                                         instanceof
-                                        me.tofaa.entitylib.wrapper.WrapperPlayer player) {
+                                        me.tofaa.entitylib.wrapper.WrapperPlayer player
+                                        && name != null && texture != null) {
                                     player.setProfile(
                                             new com.github.retrooper.packetevents.protocol.player
                                                     .UserProfile(player.getUuid(), name));

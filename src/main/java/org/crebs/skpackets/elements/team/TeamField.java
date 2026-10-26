@@ -2,10 +2,11 @@ package org.crebs.skpackets.elements.team;
 
 import ch.njol.skript.util.Color;
 import ch.njol.skript.util.SkriptColor;
-
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.*;
-
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.CollisionRule;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.NameTagVisibility;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.OptionData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -157,6 +158,9 @@ public enum TeamField {
                                 : NamedTextColor.nearestTo(
                                         TextColor.color(
                                                 color.getRed(), color.getGreen(), color.getBlue()));
+                if (named == null) {
+                    throw new IllegalArgumentException("The team color must be a named Minecraft color.");
+                }
                 info.setColor(named);
             }
             case NAME_TAG_VISIBILITY ->
@@ -167,8 +171,8 @@ public enum TeamField {
                 int bit = this == FRIENDLY_FIRE ? 1 : 2;
                 int flags = info.getOptionData().getByteValue();
                 info.setOptionData(
-                        OptionData.fromValue(
-                                (byte) ((Boolean) value ? flags | bit : flags & ~bit)));
+                        Objects.requireNonNull(OptionData.fromValue(
+                                (byte) ((Boolean) value ? flags | bit : flags & ~bit))));
             }
             default -> throw new IllegalStateException();
         }

@@ -28,16 +28,14 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.TriggerItem;
 import ch.njol.util.Kleenean;
-
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.shanebeee.skr.Registration;
 import com.github.shanebeee.skr.skript.SimpleEntryValidator;
-
 import org.bukkit.event.Event;
-import org.crebs.skpackets.api.util.field.ConstructionContext;
 import org.crebs.skpackets.api.util.field.FieldAccessor;
 import org.crebs.skpackets.api.util.field.FieldSchema;
+import org.crebs.skpackets.api.util.field.FieldSections;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,25 +67,8 @@ public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
 
         StringBuilder description = new StringBuilder();
         description.append("Create a new packet from a packet type.\n");
-        description.append("### Available Packets and their fields\n");
-
-        Collection<FieldSchema<PacketTypeCommon, PacketWrapper<?>>> schemas =
-                PacketFieldRegistry.INSTANCE.getAllSchemas();
-        for (FieldSchema<PacketTypeCommon, PacketWrapper<?>> schema : schemas) {
-            String fieldLines = schema.getReadableFields();
-            if (!fieldLines.isEmpty()) {
-                description
-                        .append("* **")
-                        .append(
-                                schema.type()
-                                        .getName()
-                                        .toLowerCase(Locale.ENGLISH)
-                                        .replace("_", " "))
-                        .append("** fields:\n")
-                        .append(fieldLines)
-                        .append("\n");
-            }
-        }
+        description.append(FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
+                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ")));
 
         reg.newSimpleExpression(
                         SecExprNewPacket.class,
@@ -189,62 +170,8 @@ public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
             return false;
         }
 
-        List<String> missingKeys = new ArrayList<>();
-        for (FieldAccessor<PacketWrapper<?>, ?> field : this.schema.accessors()) {
-            String key = field.name();
-            Class<?> expectedType = field.expectedType();
-
-            Expression<?> expr = container.getOptional(key, Object.class, false);
-
-            if (expr == null) {
-                for (String alias : field.aliases()) {
-                    expr = container.getOptional(alias, Object.class, false);
-                    if (expr != null) {
-                        break;
-                    }
-                }
-            }
-
-            if (expr == null) {
-                if (!field.isOptional()) {
-                    missingKeys.add(key);
-                }
-                continue;
-            }
-
-            Class<?> baseType =
-                    expectedType.isArray() ? expectedType.getComponentType() : expectedType;
-            Expression<?> converted = expr.getConvertedExpression(baseType);
-
-            if (converted == null) {
-                Skript.error(
-                        "The value for '"
-                                + key
-                                + "' must be of type "
-                                + expectedType.getSimpleName()
-                                + ".");
-                return false;
-            }
-
-            if (!expectedType.isArray() && !converted.isSingle()) {
-                Skript.error("The value for '" + key + "' must be a single value.");
-                return false;
-            }
-
-            this.fieldExpressions.put(key, converted);
-        }
-
-        if (!missingKeys.isEmpty()) {
-            String packetName = type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ");
-            Skript.error(
-                    "Missing required entries for "
-                            + packetName
-                            + " packet: "
-                            + String.join(", ", missingKeys));
-            return false;
-        }
-
-        return true;
+        return FieldSections.parse(this.schema.accessors(), container, this.fieldExpressions,
+                this.type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ") + " packet", true, Set.of());
     }
 
     @Override
@@ -259,38 +186,7 @@ public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
     }
 
     private @Nullable PacketWrapper<?> createPacket(@NotNull Event event) {
-        if (this.schema == null) {
-            return null;
-        }
-
-        Map<String, Object> values = new HashMap<>();
-        for (FieldAccessor<PacketWrapper<?>, ?> field : this.schema.accessors()) {
-            Expression<?> expr = this.fieldExpressions.get(field.name());
-
-            if (expr == null) {
-                continue;
-            }
-
-            Object value;
-            if (field.expectedType().isArray() || !expr.isSingle()) {
-                Object[] array = expr.getArray(event);
-                value = (array == null || array.length == 0) ? null : array;
-            } else {
-                value = expr.getSingle(event);
-            }
-
-            if (value == null) {
-                if (!field.isOptional()) {
-                    return null;
-                }
-                continue;
-            }
-            values.put(field.name(), value);
-        }
-
-        return this.schema
-                .constructor()
-                .apply(new ConstructionContext<>(this.type, this.schema.accessors(), values));
+        return FieldSections.create(this.schema, this.type, this.fieldExpressions, event, Map.of());
     }
 
     @Override

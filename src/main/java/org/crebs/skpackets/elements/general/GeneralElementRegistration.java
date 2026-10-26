@@ -21,7 +21,6 @@
 package org.crebs.skpackets.elements.general;
 
 import com.github.shanebeee.skr.Registration;
-
 import org.crebs.skpackets.elements.general.condition.CondPacketTypeIsBound;
 import org.crebs.skpackets.elements.general.effects.EffCancelPacket;
 import org.crebs.skpackets.elements.general.effects.EffFetchSkin;
@@ -29,7 +28,10 @@ import org.crebs.skpackets.elements.general.effects.EffSendOrReceivePacket;
 import org.crebs.skpackets.elements.general.event.EvtNettyPacket;
 import org.crebs.skpackets.elements.general.event.EvtPacketSendOrReceive;
 import org.crebs.skpackets.elements.general.expressions.ExprSkinFromValue;
-import org.crebs.skpackets.elements.general.expressions.prop.*;
+import org.crebs.skpackets.elements.general.expressions.prop.ExprEntityId;
+import org.crebs.skpackets.elements.general.expressions.prop.ExprPacketField;
+import org.crebs.skpackets.elements.general.expressions.prop.ExprPacketPacketType;
+import org.crebs.skpackets.elements.general.expressions.prop.ExprPlayerSkin;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.crebs.skpackets.elements.general.section.SecExprNewPacket;
 

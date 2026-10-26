@@ -1,17 +1,10 @@
 package org.crebs.skpackets.elements;
 
 import ch.njol.skript.expressions.base.SectionExpression;
-import ch.njol.skript.lang.Condition;
-import ch.njol.skript.lang.Effect;
-import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.Section;
-import ch.njol.skript.lang.SkriptEvent;
-
+import ch.njol.skript.lang.*;
 import com.github.shanebeee.skr.Registration;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-
 import org.bukkit.command.CommandSender;
 import org.skriptlang.skript.lang.structure.Structure;
 

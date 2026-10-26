@@ -1,23 +1,26 @@
 package org.crebs.skpackets.api.simple;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.Equipment;
 import com.github.retrooper.packetevents.protocol.player.EquipmentSlot;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
-
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEquipment;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -125,10 +128,9 @@ public final class FakeEquipmentManager extends PacketListenerAbstract
     }
 
     @Override
-    public void onPacketSend(PacketSendEvent event) {
+    public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (closed || event.isCancelled()) return;
         UUID viewer = event.getUser().getUUID();
-        if (viewer == null) return;
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_EQUIPMENT) {
             var packet = new WrapperPlayServerEntityEquipment(event);
             Appearance appearance = overrides.get(new Key(viewer, entityIds.get(packet.getEntityId())));

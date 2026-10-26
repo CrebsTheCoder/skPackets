@@ -39,14 +39,15 @@ public class SkinManager {
     private static final Cache<String, Skin> skinCache =
             CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(5)).build();
 
-    public static Skin getPlayer(final Player player) {
+    public static @org.jetbrains.annotations.Nullable Skin getPlayer(final Player player) {
         User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
+        if (user == null) return null;
         List<TextureProperty> properties = user.getProfile().getTextureProperties();
 
         return new Skin(properties);
     }
 
-    public static Skin getOfflinePlayer(final String playerName) {
+    public static @org.jetbrains.annotations.Nullable Skin getOfflinePlayer(final String playerName) {
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getName().equalsIgnoreCase(playerName)) {

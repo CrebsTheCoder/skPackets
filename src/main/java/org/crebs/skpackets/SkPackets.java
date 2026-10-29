@@ -9,7 +9,10 @@ import org.crebs.skpackets.api.simple.FakeEquipmentManager;
 import org.crebs.skpackets.api.simple.FakeInventoryManager;
 import org.crebs.skpackets.api.team.PacketTeamManager;
 import org.crebs.skpackets.elements.ElementCounts;
-import org.crebs.skpackets.elements.ElementRegistration;
+import org.crebs.skpackets.elements.entity.EntityModule;
+import org.crebs.skpackets.elements.general.GeneralModule;
+import org.crebs.skpackets.elements.simple.SimpleModule;
+import org.crebs.skpackets.elements.team.TeamModule;
 import org.crebs.skpackets.elements.ElementRuntime;
 
 public final class SkPackets extends JavaPlugin {
@@ -81,7 +84,12 @@ public final class SkPackets extends JavaPlugin {
         skinRefresh = new org.crebs.skpackets.api.simple.PlayerSkinRefresh(this);
         fakeEquipment = new FakeEquipmentManager(this);
         registration = new Registration(getName(), true);
-        ElementRegistration.register(registration);
+        registration.getAddon().loadModules(
+                new GeneralModule(registration),
+                new SimpleModule(registration),
+                new EntityModule(registration),
+                new TeamModule(registration));
+        registration.finalizeRegistration();
         ElementCounts.log(registration, getServer().getConsoleSender());
     }
 

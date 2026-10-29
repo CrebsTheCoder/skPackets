@@ -21,25 +21,26 @@
 package org.crebs.skpackets.elements.simple;
 
 import com.github.shanebeee.skr.Registration;
+import org.crebs.skpackets.elements.RegistrationModule;
+import org.skriptlang.skript.addon.SkriptAddon;
 import org.crebs.skpackets.elements.simple.effects.*;
 import org.crebs.skpackets.elements.simple.expressions.ExprGlowReceivers;
 
-public final class SimpleElementRegistration {
+public record SimpleModule(Registration registration) implements RegistrationModule {
 
-    public static void register(Registration registration) {
-        registerEffects(registration);
-        registerExpressions(registration);
+    @Override
+    public String name() {
+        return "simple";
     }
 
-    private static void registerEffects(Registration registration) {
-        EffDisplayedSkin.register(registration);
-        EffGlow.register(registration);
-        EffFakeBlock.register(registration);
-        EffFakeEquipment.register(registration);
-        EffFakeInventorySlot.register(registration);
-    }
-
-    private static void registerExpressions(Registration registration) {
-        ExprGlowReceivers.register(registration);
+    @Override
+    public void load(SkriptAddon addon) {
+        register(registration,
+                EffDisplayedSkin::register,
+                EffGlow::register,
+                EffFakeBlock::register,
+                EffFakeEquipment::register,
+                EffFakeInventorySlot::register,
+                ExprGlowReceivers::register);
     }
 }

@@ -6,6 +6,8 @@ plugins {
 group = "org.crebs"
 version = "1.0"
 
+val mockitoAgent by configurations.creating
+
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
@@ -25,6 +27,16 @@ repositories {
 }
 
 dependencies {
+    testImplementation(platform("org.junit:junit-bom:6.0.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.26.1")
+    testImplementation("org.mockito:mockito-core:5.15.2")
+    testImplementation("net.bytebuddy:byte-buddy:1.18.12")
+    testRuntimeOnly("net.bytebuddy:byte-buddy-agent:1.18.12")
+    mockitoAgent("org.mockito:mockito-core:5.15.2") {
+        isTransitive = false
+    }
     implementation("io.github.tofaa2:spigot:4.0.0-alpha.4") {
         exclude(group = "org.jetbrains", module = "annotations")
     }
@@ -80,5 +92,12 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 }
 
 tasks.test {
-    enabled = false
+    useJUnitPlatform()
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        listOf("-javaagent:${mockitoAgent.singleFile.absolutePath}")
+    })
+}
+
+configurations.testImplementation {
+    extendsFrom(configurations.compileOnly.get())
 }

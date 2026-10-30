@@ -9,8 +9,19 @@ Create client-side entities, send packets, and change what individual players se
 <a href="https://skdocs.org/?addon=skPackets">
   <img src="https://camo.githubusercontent.com/1623c33b83fe153048358ded38409eb55182c29a98158e78b1aeca2ad9575e32/687474703a2f2f736b646f63732e6f72672f76696577646f63732e706e67" alt="View skPackets documentation on SkDocs">
 </a>
+<a href="http://skripthub.net/docs/?addon=skPackets">
+  <img src="http://skripthub.net/static/addon/ViewTheDocsButton.png" alt="View skPackets documentation on SkriptHub">
+</a>
 
-[Features](#features) · [Requirements](#requirements) · [Showcases](#showcases) · [Persistence](#persistence) · [Credits](#credits)
+<div align="center">
+
+[![Features](https://img.shields.io/badge/Navigation-Features-007ACC?style=for-the-badge)](#features)
+[![Requirements](https://img.shields.io/badge/Navigation-Requirements-007ACC?style=for-the-badge)](#requirements)
+[![Showcases](https://img.shields.io/badge/Navigation-Showcases-007ACC?style=for-the-badge)](#showcases)
+[![Persistence](https://img.shields.io/badge/Navigation-Persistence-007ACC?style=for-the-badge)](#persistence)
+[![Credits](https://img.shields.io/badge/Navigation-Credits-007ACC?style=for-the-badge)](#credits)
+
+</div>
 
 </div>
 

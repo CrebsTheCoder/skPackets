@@ -2,7 +2,6 @@ package org.crebs.skpackets.elements.entity;
 
 import com.github.shanebeee.skr.Registration;
 import org.crebs.skpackets.elements.RegistrationModule;
-import org.skriptlang.skript.addon.SkriptAddon;
 import org.crebs.skpackets.elements.entity.effects.*;
 import org.crebs.skpackets.elements.entity.expressions.*;
 import org.crebs.skpackets.elements.entity.expressions.entity.FakeEntityExpressions;
@@ -15,6 +14,7 @@ import org.crebs.skpackets.elements.entity.field.meta.MetaFieldRegistry;
 import org.crebs.skpackets.elements.entity.section.SecExprNewFakeEntity;
 import org.crebs.skpackets.elements.entity.section.SecExprNewMeta;
 import org.crebs.skpackets.elements.entity.types.PacketEntity;
+import org.skriptlang.skript.addon.SkriptAddon;
 
 public record EntityModule(Registration registration) implements RegistrationModule {
 

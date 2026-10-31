@@ -1,24 +1,22 @@
 package org.crebs.skpackets.api.entity;
 
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-
 import me.tofaa.entitylib.wrapper.WrapperEntity;
 import me.tofaa.entitylib.wrapper.WrapperLivingEntity;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 

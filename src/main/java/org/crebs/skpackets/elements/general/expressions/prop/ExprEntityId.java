@@ -21,11 +21,9 @@
 package org.crebs.skpackets.elements.general.expressions.prop;
 
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-
 import com.github.shanebeee.skr.Registration;
-
-import org.bukkit.entity.Entity;
 import me.tofaa.entitylib.wrapper.WrapperEntity;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 public class ExprEntityId extends SimplePropertyExpression<Object, Integer> {

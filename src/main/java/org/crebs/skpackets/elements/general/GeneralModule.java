@@ -22,7 +22,6 @@ package org.crebs.skpackets.elements.general;
 
 import com.github.shanebeee.skr.Registration;
 import org.crebs.skpackets.elements.RegistrationModule;
-import org.skriptlang.skript.addon.SkriptAddon;
 import org.crebs.skpackets.elements.general.condition.CondPacketTypeIsBound;
 import org.crebs.skpackets.elements.general.effects.EffCancelPacket;
 import org.crebs.skpackets.elements.general.effects.EffFetchSkin;
@@ -36,6 +35,7 @@ import org.crebs.skpackets.elements.general.expressions.prop.ExprPacketPacketTyp
 import org.crebs.skpackets.elements.general.expressions.prop.ExprPlayerSkin;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.crebs.skpackets.elements.general.section.SecExprNewPacket;
+import org.skriptlang.skript.addon.SkriptAddon;
 
 public record GeneralModule(Registration registration) implements RegistrationModule {
 

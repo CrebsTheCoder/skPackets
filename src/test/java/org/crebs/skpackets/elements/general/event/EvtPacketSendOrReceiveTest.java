@@ -7,7 +7,6 @@ import ch.njol.skript.lang.SkriptParser;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
-import java.util.List;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.api.general.packet.PacketSendOrReceiveEvent;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockMakers.INLINE;
 import static org.mockito.Mockito.*;
 

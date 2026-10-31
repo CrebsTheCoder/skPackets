@@ -3,9 +3,12 @@ package org.crebs.skpackets.elements.entity.effects;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import me.tofaa.entitylib.wrapper.WrapperEntity;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.SkPackets;
@@ -14,13 +17,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.UUID;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.List;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
-import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;

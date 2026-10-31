@@ -2,14 +2,14 @@ package org.crebs.skpackets.elements.general.effects;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
-import java.lang.reflect.Field;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.api.entity.Skin;
 import org.crebs.skpackets.api.entity.SkinManager;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Field;
+
 import static org.mockito.MockMakers.INLINE;
 import static org.mockito.Mockito.*;
 

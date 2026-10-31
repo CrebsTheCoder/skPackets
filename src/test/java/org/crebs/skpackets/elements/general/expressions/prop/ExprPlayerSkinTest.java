@@ -1,6 +1,5 @@
 package org.crebs.skpackets.elements.general.expressions.prop;
 
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -9,7 +8,9 @@ import org.crebs.skpackets.api.general.PlayerSkinRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.MockMakers.INLINE;
 import static org.mockito.Mockito.*;
 

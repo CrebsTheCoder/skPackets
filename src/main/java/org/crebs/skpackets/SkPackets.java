@@ -1,7 +1,6 @@
 package org.crebs.skpackets;
 
 import com.github.shanebeee.skr.Registration;
-
 import org.bukkit.plugin.java.JavaPlugin;
 import org.crebs.skpackets.api.entity.PacketEntityManager;
 import org.crebs.skpackets.api.simple.FakeBlockManager;
@@ -9,11 +8,11 @@ import org.crebs.skpackets.api.simple.FakeEquipmentManager;
 import org.crebs.skpackets.api.simple.FakeInventoryManager;
 import org.crebs.skpackets.api.team.PacketTeamManager;
 import org.crebs.skpackets.elements.ElementCounts;
+import org.crebs.skpackets.elements.ElementRuntime;
 import org.crebs.skpackets.elements.entity.EntityModule;
 import org.crebs.skpackets.elements.general.GeneralModule;
 import org.crebs.skpackets.elements.simple.SimpleModule;
 import org.crebs.skpackets.elements.team.TeamModule;
-import org.crebs.skpackets.elements.ElementRuntime;
 
 public final class SkPackets extends JavaPlugin {
     private static SkPackets instance;

@@ -22,9 +22,9 @@ package org.crebs.skpackets.elements.simple;
 
 import com.github.shanebeee.skr.Registration;
 import org.crebs.skpackets.elements.RegistrationModule;
-import org.skriptlang.skript.addon.SkriptAddon;
 import org.crebs.skpackets.elements.simple.effects.*;
 import org.crebs.skpackets.elements.simple.expressions.ExprGlowReceivers;
+import org.skriptlang.skript.addon.SkriptAddon;
 
 public record SimpleModule(Registration registration) implements RegistrationModule {
 

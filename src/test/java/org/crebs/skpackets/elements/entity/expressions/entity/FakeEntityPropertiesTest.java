@@ -14,14 +14,16 @@ import org.crebs.skpackets.elements.entity.field.entity.FakeEntityFieldRegistry;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.Mockito.*;
 import static org.mockito.MockMakers.INLINE;
+import static org.mockito.Mockito.*;
 
 class FakeEntityPropertiesTest {
     static Stream<Arguments> properties() {

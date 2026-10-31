@@ -7,12 +7,14 @@ import me.tofaa.entitylib.EntityLib;
 import me.tofaa.entitylib.wrapper.WrapperEntity;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import static org.mockito.MockMakers.INLINE;
+import static org.mockito.Mockito.*;
 
 class VisibleFakeEntitiesTest {
     @Test

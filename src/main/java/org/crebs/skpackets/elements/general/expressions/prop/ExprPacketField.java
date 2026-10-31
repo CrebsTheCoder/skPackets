@@ -41,8 +41,8 @@ import org.crebs.skpackets.elements.general.event.EvtPacketSendOrReceive.PacketS
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 @SuppressWarnings("rawtypes")

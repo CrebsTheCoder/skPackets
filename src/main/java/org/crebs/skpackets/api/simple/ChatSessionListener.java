@@ -55,6 +55,7 @@ public class ChatSessionListener implements PacketListener {
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onUserDisconnect(UserDisconnectEvent event) {
         UUID ownerId = event.getUser().getUUID();
         if (ownerId != null) {

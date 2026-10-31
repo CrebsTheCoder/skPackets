@@ -154,6 +154,7 @@ public final class FakeBlockManager extends PacketListenerAbstract
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (closed || event.isCancelled()) return;
         UUID id = event.getUser().getUUID();

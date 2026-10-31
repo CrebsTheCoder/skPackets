@@ -3,12 +3,13 @@ package org.crebs.skpackets.elements.general.section;
 import ch.njol.skript.Skript;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import java.lang.reflect.Field;
-import java.util.List;
 import org.bukkit.event.Event;
 import org.crebs.skpackets.api.util.field.FieldSchema;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.MockMakers.INLINE;

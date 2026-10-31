@@ -77,6 +77,7 @@ public class EntityTracker implements PacketListener {
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onPacketSend(PacketSendEvent event) {
         if (event.getUser().getUUID() == null) return;
         if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY) {
@@ -111,6 +112,7 @@ public class EntityTracker implements PacketListener {
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onUserDisconnect(UserDisconnectEvent event) {
         UUID userUuid = event.getUser().getUUID();
         if (userUuid != null) PLAYER_ENTITIES.remove(userUuid);

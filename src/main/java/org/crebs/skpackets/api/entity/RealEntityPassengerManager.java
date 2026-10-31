@@ -7,11 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 final class RealEntityPassengerManager {
     private record Key(UUID viewer, UUID vehicle) {}

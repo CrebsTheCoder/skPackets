@@ -2,10 +2,10 @@ package org.crebs.skpackets.elements.team;
 
 import com.github.shanebeee.skr.Registration;
 import org.crebs.skpackets.elements.RegistrationModule;
-import org.skriptlang.skript.addon.SkriptAddon;
 import org.crebs.skpackets.elements.team.effects.EffTeamMembers;
 import org.crebs.skpackets.elements.team.expressions.*;
 import org.crebs.skpackets.elements.team.section.SecNewPacketTeam;
+import org.skriptlang.skript.addon.SkriptAddon;
 
 public record TeamModule(Registration registration) implements RegistrationModule {
 

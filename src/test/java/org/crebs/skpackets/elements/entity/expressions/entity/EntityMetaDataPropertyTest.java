@@ -3,17 +3,19 @@ package org.crebs.skpackets.elements.entity.expressions.entity;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import me.tofaa.entitylib.wrapper.WrapperEntity;
-import org.crebs.skpackets.api.entity.metadata.EntityMeta;
-import org.junit.jupiter.api.Test;
-import org.bukkit.entity.Entity;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import me.tofaa.entitylib.wrapper.WrapperEntity;
+import org.bukkit.entity.Entity;
+import org.crebs.skpackets.api.entity.metadata.EntityMeta;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import static org.mockito.MockMakers.INLINE;
+import static org.mockito.Mockito.*;
 
 class EntityMetaDataPropertyTest {
     @Test

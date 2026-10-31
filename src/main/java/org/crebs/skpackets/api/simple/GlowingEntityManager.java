@@ -70,7 +70,7 @@ public class GlowingEntityManager {
         Set<UUID> toRemove = new HashSet<>();
         if (oldReceivers != null) {
             toRemove.addAll(oldReceivers);
-            toRemove.removeAll(glowingReceivers);
+            glowingReceivers.forEach(toRemove::remove);
         }
 
         Set<UUID> newReceivers = new HashSet<>(glowingReceivers);

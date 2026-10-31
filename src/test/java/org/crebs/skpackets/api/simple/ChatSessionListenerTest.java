@@ -88,8 +88,9 @@ class ChatSessionListenerTest {
     }
 
     @Test
-    void disconnectWithoutAProfileUuidDoesNotThrow() {
+    void disconnectWithoutCachedSessionDoesNotThrow() {
         UserDisconnectEvent disconnect = mock(UserDisconnectEvent.class, RETURNS_DEEP_STUBS);
+        when(disconnect.getUser().getUUID()).thenReturn(UUID.randomUUID());
         assertDoesNotThrow(() -> new ChatSessionListener().onUserDisconnect(disconnect));
         assertNull(ChatSessionListener.getChatSession(null));
     }

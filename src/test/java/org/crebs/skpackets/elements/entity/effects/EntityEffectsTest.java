@@ -21,12 +21,8 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
-import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class EntityEffectsTest {
@@ -144,9 +140,18 @@ class EntityEffectsTest {
         Expression<?>[] inputs = {input(first, second), input(vehicle)};
         var effect = new EffRideFakeEntity();
         assertTrue(effect.init(inputs, pattern, Kleenean.FALSE, new ParseResult("", inputs)));
-        effect.execute(event);
+        SkPackets plugin = mock(SkPackets.class);
+        PacketEntityManager manager = mock(PacketEntityManager.class);
+        when(plugin.getPacketEntities()).thenReturn(manager);
+        try (var staticPlugin = mockStatic(SkPackets.class)) {
+            staticPlugin.when(SkPackets::getInstance).thenReturn(plugin);
+            effect.execute(event);
+        }
         for (WrapperEntity passenger : new WrapperEntity[]{first, second}) {
-            if (pattern == 0) verify(vehicle).addPassenger(passenger);
+            if (pattern == 0) {
+                verify(manager).removeRealPassenger(passenger);
+                verify(vehicle).addPassenger(passenger);
+            }
             else verify(vehicle).removePassenger(passenger);
         }
         verifyNoMoreInteractions(vehicle);
@@ -203,23 +208,21 @@ class EntityEffectsTest {
 
     @ParameterizedTest
     @ValueSource(ints = {0, 1})
-    void ridingRealVehiclePreservesItsServerPassengers(int pattern) {
-        Entity vehicle = mock(Entity.class), realPassenger = mock(Entity.class);
+    void ridingRealVehicleDelegatesViewerSpecificPassengersToManager(int pattern) {
+        Entity vehicle = mock(Entity.class);
         WrapperEntity fakePassenger = mock(WrapperEntity.class);
-        when(vehicle.getEntityId()).thenReturn(1);
-        when(realPassenger.getEntityId()).thenReturn(2);
-        when(fakePassenger.getEntityId()).thenReturn(3);
-        when(vehicle.getPassengers()).thenReturn(List.of(realPassenger));
         Expression<?>[] inputs = {input(fakePassenger), input(vehicle)};
         var effect = new EffRideFakeEntity();
         assertTrue(effect.init(inputs, pattern, Kleenean.FALSE, new ParseResult("", inputs)));
-        effect.execute(event);
-        var packet = ArgumentCaptor.forClass(WrapperPlayServerSetPassengers.class);
-        verify(fakePassenger).sendPacketToViewers(packet.capture());
-        assertEquals(1, packet.getValue().getEntityId());
-        assertArrayEquals(pattern == 0 ? new int[]{2, 3} : new int[]{2}, packet.getValue().getPassengers());
-        verify(vehicle, never()).addPassenger(any());
-        verify(vehicle, never()).removePassenger(any());
+        SkPackets plugin = mock(SkPackets.class);
+        PacketEntityManager manager = mock(PacketEntityManager.class);
+        when(plugin.getPacketEntities()).thenReturn(manager);
+        try (var staticPlugin = mockStatic(SkPackets.class)) {
+            staticPlugin.when(SkPackets::getInstance).thenReturn(plugin);
+            effect.execute(event);
+            verify(manager).updateRealPassengers(vehicle, List.of(fakePassenger), pattern == 0);
+        }
+        verifyNoInteractions(vehicle);
     }
 }
 

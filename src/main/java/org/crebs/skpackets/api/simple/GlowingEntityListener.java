@@ -22,14 +22,23 @@ package org.crebs.skpackets.api.simple;
 
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.event.UserDisconnectEvent;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 
-import org.crebs.skpackets.api.entity.metadata.EntityMeta;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRemoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
-public class GlowingEntityListener implements PacketListener {
+public class GlowingEntityListener implements PacketListener, Listener {
 
     @Override
     public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
@@ -42,17 +51,49 @@ public class GlowingEntityListener implements PacketListener {
         UUID playerUUID = event.getUser().getUUID();
         int entityId = packet.getEntityId();
 
-        if (GlowingEntityManager.isGlowingFor(entityId, playerUUID)) {
-            EntityMeta meta =
-                    EntityMeta.createMeta(
-                            packet.getEntityId(),
-                            com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
-                                    .ENTITY);
-            meta.readPacket(packet);
-            meta.entity().setFlag(me.tofaa.entitylib.meta.MetaFields.Entity.GLOWING, true);
-
-            packet.setEntityMetadata(meta.entityData());
-            event.markForReEncode(true);
+        if (!GlowingEntityManager.isGlowingFor(entityId, playerUUID)) {
+            return;
         }
+
+        var metadata = packet.getEntityMetadata();
+        for (int i = 0; i < metadata.size(); i++) {
+            var data = metadata.get(i);
+            if (data.getIndex() != 0 || !(data.getValue() instanceof Byte flags)) {
+                continue;
+            }
+            if ((flags & 0x40) == 0) {
+                var updated = new ArrayList<EntityData<?>>(metadata);
+                updated.set(i, new EntityData<>(0, EntityDataTypes.BYTE, (byte) (flags | 0x40)));
+                packet.setEntityMetadata(updated);
+                event.markForReEncode(true);
+            }
+            return;
+        }
+    }
+
+    @Override
+    public void onUserDisconnect(UserDisconnectEvent event) {
+        GlowingEntityManager.forgetViewer(event.getUser().getUUID());
+    }
+
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent event) {
+        GlowingEntityManager.forgetEntity(event.getEntity().getEntityId());
+    }
+
+    @EventHandler
+    public void onEntityRemove(EntityRemoveEvent event) {
+        GlowingEntityManager.forgetEntity(event.getEntity().getEntityId());
+    }
+
+    @EventHandler
+    public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        event.getEntities().forEach(entity -> GlowingEntityManager.forgetEntity(entity.getEntityId()));
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        GlowingEntityManager.forgetEntity(event.getPlayer().getEntityId());
+        GlowingEntityManager.forgetViewer(event.getPlayer().getUniqueId());
     }
 }

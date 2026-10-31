@@ -109,6 +109,16 @@ class EntityCreationSectionsTest {
     }
 
     @Test
+    void genericEntityDiagnosticDoesNotRequireTypedEntity() throws Exception {
+        var expression = new SecExprNewFakeEntity();
+        Field generic = SecExprNewFakeEntity.class.getDeclaredField("generic");
+        generic.setAccessible(true);
+        generic.setBoolean(expression, true);
+        assertEquals("a new fake entity", expression.toString(null, false));
+        assertEquals("a new fake entity", expression.toString(null, true));
+    }
+
+    @Test
     void invalidEntityTypeRejectsBothSections() {
         try (var logging = mockStatic(Skript.class, withSettings().mockMaker(INLINE))) {
             Expression<?>[] inputs = {mock(Expression.class)};

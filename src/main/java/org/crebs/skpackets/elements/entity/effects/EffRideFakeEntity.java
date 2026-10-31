@@ -25,7 +25,6 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
 import com.github.shanebeee.skr.Registration;
 
 import me.tofaa.entitylib.wrapper.WrapperEntity;
@@ -34,7 +33,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Arrays;
 
 public class EffRideFakeEntity extends Effect {
 
@@ -102,6 +101,7 @@ public class EffRideFakeEntity extends Effect {
         if (vehicle instanceof WrapperEntity fakeVehicle) {
             for (WrapperEntity passenger : passengers) {
                 if (mount) {
+                    org.crebs.skpackets.SkPackets.getInstance().getPacketEntities().removeRealPassenger(passenger);
                     fakeVehicle.addPassenger(passenger);
                 } else {
                     fakeVehicle.removePassenger(passenger);
@@ -111,32 +111,8 @@ public class EffRideFakeEntity extends Effect {
         }
 
         if (vehicle instanceof Entity realVehicle) {
-            int vehicleId = realVehicle.getEntityId();
-
-            List<Entity> realPassengers = realVehicle.getPassengers();
-            int[] passengerIds;
-
-            if (mount) {
-                passengerIds = new int[realPassengers.size() + passengers.length];
-                for (int i = 0; i < realPassengers.size(); i++) {
-                    passengerIds[i] = realPassengers.get(i).getEntityId();
-                }
-                for (int i = 0; i < passengers.length; i++) {
-                    passengerIds[realPassengers.size() + i] = passengers[i].getEntityId();
-                }
-            } else {
-                passengerIds = new int[realPassengers.size()];
-                for (int i = 0; i < realPassengers.size(); i++) {
-                    passengerIds[i] = realPassengers.get(i).getEntityId();
-                }
-            }
-
-            WrapperPlayServerSetPassengers packet =
-                    new WrapperPlayServerSetPassengers(vehicleId, passengerIds);
-
-            for (WrapperEntity passenger : passengers) {
-                passenger.sendPacketToViewers(packet);
-            }
+            org.crebs.skpackets.SkPackets.getInstance().getPacketEntities()
+                    .updateRealPassengers(realVehicle, Arrays.asList(passengers), mount);
         }
     }
 

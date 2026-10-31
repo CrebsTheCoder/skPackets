@@ -26,44 +26,61 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 
 public class PacketTypeRegistry {
 
-    private static final Map<String, PacketTypeCommon> CLIENT_BOUND_PACKETS =
-            new ConcurrentHashMap<>();
-    private static final Map<String, PacketTypeCommon> SERVER_BOUND_PACKETS =
-            new ConcurrentHashMap<>();
+    private static final Map<String, PacketTypeCommon> CLIENT_BOUND_PACKETS = new HashMap<>();
+    private static final Map<String, PacketTypeCommon> SERVER_BOUND_PACKETS = new HashMap<>();
+    private static final Map<PacketTypeCommon, String> PROTOCOL_STATES = new HashMap<>();
+    private static final List<String> STATES = List.of("play", "configuration", "login", "handshaking", "status");
     private static final List<PacketTypeCommon> ALL_PACKETS;
 
     static {
-        BiConsumer<Map<String, PacketTypeCommon>, PacketTypeCommon[]> populateMap =
-                (map, types) -> {
-                    for (PacketTypeCommon type : types) {
-                        map.put(type.getName().toUpperCase(Locale.ENGLISH), type);
-                    }
-                };
-
-        populateMap.accept(CLIENT_BOUND_PACKETS, PacketType.Play.Server.values());
-        populateMap.accept(CLIENT_BOUND_PACKETS, PacketType.Configuration.Server.values());
-        populateMap.accept(CLIENT_BOUND_PACKETS, PacketType.Login.Server.values());
-        populateMap.accept(CLIENT_BOUND_PACKETS, PacketType.Handshaking.Server.values());
-        populateMap.accept(CLIENT_BOUND_PACKETS, PacketType.Status.Server.values());
-
-        populateMap.accept(SERVER_BOUND_PACKETS, PacketType.Play.Client.values());
-        populateMap.accept(SERVER_BOUND_PACKETS, PacketType.Configuration.Client.values());
-        populateMap.accept(SERVER_BOUND_PACKETS, PacketType.Login.Client.values());
-        populateMap.accept(SERVER_BOUND_PACKETS, PacketType.Handshaking.Client.values());
-        populateMap.accept(SERVER_BOUND_PACKETS, PacketType.Status.Client.values());
-
         List<PacketTypeCommon> packets = new ArrayList<>();
-        packets.addAll(CLIENT_BOUND_PACKETS.values());
-        packets.addAll(SERVER_BOUND_PACKETS.values());
+        register(CLIENT_BOUND_PACKETS, "play", PacketType.Play.Server.values(), packets);
+        register(CLIENT_BOUND_PACKETS, "configuration", PacketType.Configuration.Server.values(), packets);
+        register(CLIENT_BOUND_PACKETS, "login", PacketType.Login.Server.values(), packets);
+        register(CLIENT_BOUND_PACKETS, "handshaking", PacketType.Handshaking.Server.values(), packets);
+        register(CLIENT_BOUND_PACKETS, "status", PacketType.Status.Server.values(), packets);
+        register(SERVER_BOUND_PACKETS, "play", PacketType.Play.Client.values(), packets);
+        register(SERVER_BOUND_PACKETS, "configuration", PacketType.Configuration.Client.values(), packets);
+        register(SERVER_BOUND_PACKETS, "login", PacketType.Login.Client.values(), packets);
+        register(SERVER_BOUND_PACKETS, "handshaking", PacketType.Handshaking.Client.values(), packets);
+        register(SERVER_BOUND_PACKETS, "status", PacketType.Status.Client.values(), packets);
         ALL_PACKETS = List.copyOf(packets);
+    }
+
+    private static void register(Map<String, PacketTypeCommon> registry, String state, PacketTypeCommon[] types, List<PacketTypeCommon> packets) {
+        for (PacketTypeCommon type : types) {
+            String name = normalize(type.getName());
+            registry.putIfAbsent(name, type);
+            registry.put(state + ":" + name, type);
+            PROTOCOL_STATES.put(type, state);
+            packets.add(type);
+        }
+    }
+
+    private static String normalize(String name) {
+        return name.trim().toLowerCase(Locale.ENGLISH).replaceAll("\\s+", "_");
+    }
+
+    private static @Nullable PacketTypeCommon lookup(Map<String, PacketTypeCommon> registry, String rawName) {
+        String name = normalize(rawName);
+        PacketTypeCommon type = registry.get(name);
+        if (type != null) {
+            return type;
+        }
+        for (String state : STATES) {
+            String prefix = state + "_";
+            if (name.startsWith(prefix)) {
+                return registry.get(state + ":" + name.substring(prefix.length()));
+            }
+        }
+        return null;
     }
 
     public static List<PacketTypeCommon> getAllPackets() {
@@ -71,24 +88,19 @@ public class PacketTypeRegistry {
     }
 
     public static @Nullable PacketTypeCommon getPacket(String rawName, boolean isSend) {
-        String key = rawName.replace(" ", "_").toUpperCase(Locale.ENGLISH);
-
-        if (isSend) {
-            return CLIENT_BOUND_PACKETS.get(key);
-        } else {
-            return SERVER_BOUND_PACKETS.get(key);
-        }
+        return lookup(isSend ? CLIENT_BOUND_PACKETS : SERVER_BOUND_PACKETS, rawName);
     }
 
     public static @Nullable PacketTypeCommon getPacket(String rawName) {
-        String key = rawName.replace(" ", "_").toUpperCase(Locale.ENGLISH);
+        PacketTypeCommon type = getPacket(rawName, true);
+        return type != null ? type : getPacket(rawName, false);
+    }
 
-        PacketTypeCommon type = CLIENT_BOUND_PACKETS.get(key);
-
-        if (type == null) {
-            type = SERVER_BOUND_PACKETS.get(key);
+    public static String getProtocolState(PacketTypeCommon type) {
+        String state = PROTOCOL_STATES.get(type);
+        if (state == null) {
+            throw new IllegalArgumentException("Unknown packet type: " + type);
         }
-
-        return type;
+        return state;
     }
 }

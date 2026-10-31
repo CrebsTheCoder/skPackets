@@ -92,12 +92,15 @@ public class EffGlow extends Effect {
 
         Set<UUID> viewerUuids;
 
-        if (viewers == null || viewers.length == 0) {
+        if (viewersExpr == null) {
             viewerUuids =
                     Bukkit.getOnlinePlayers().stream()
                             .map(Player::getUniqueId)
                             .collect(Collectors.toSet());
         } else {
+            if (viewers == null || viewers.length == 0) {
+                return;
+            }
             viewerUuids =
                     Arrays.stream(viewers).map(Player::getUniqueId).collect(Collectors.toSet());
         }

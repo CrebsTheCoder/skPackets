@@ -102,4 +102,26 @@ class ExprGlowReceiversTest {
             glow.verify(() -> GlowingEntityManager.setGlowingReceivers(16, List.of()));
         }
     }
+    @Test
+    void aSingleEntityCanReturnMultipleViewers() {
+        Entity target = mock(Entity.class);
+        when(target.getEntityId()).thenReturn(42);
+        Expression<Entity> source = mock(Expression.class);
+        when(source.isSingle()).thenReturn(true);
+        ExprGlowReceivers expression = new ExprGlowReceivers();
+        Expression<?>[] inputs = {source};
+        assertTrue(expression.init(inputs, 0, Kleenean.FALSE, new SkriptParser.ParseResult("", inputs)));
+        Player player1 = mock(Player.class);
+        Player player2 = mock(Player.class);
+        UUID player1Id = UUID.randomUUID();
+        UUID player2Id = UUID.randomUUID();
+        try (MockedStatic<GlowingEntityManager> glow = mockStatic(GlowingEntityManager.class, withSettings().mockMaker(INLINE));
+             MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class, withSettings().mockMaker(INLINE))) {
+            glow.when(() -> GlowingEntityManager.getGlowingReceivers(42)).thenReturn(List.of(player1Id, player2Id));
+            bukkit.when(() -> Bukkit.getPlayer(player1Id)).thenReturn(player1);
+            bukkit.when(() -> Bukkit.getPlayer(player2Id)).thenReturn(player2);
+            assertFalse(expression.isSingle());
+            assertArrayEquals(new Player[]{player1, player2}, expression.get(null, new Entity[]{target}));
+        }
+    }
 }

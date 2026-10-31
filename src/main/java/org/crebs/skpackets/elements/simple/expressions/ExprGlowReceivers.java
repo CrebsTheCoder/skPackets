@@ -139,6 +139,11 @@ public class ExprGlowReceivers extends PropertyExpression<Entity, Player> {
     }
 
     @Override
+    public boolean isSingle() {
+        return false;
+    }
+
+    @Override
     public Class<? extends Player> getReturnType() {
         return Player.class;
     }

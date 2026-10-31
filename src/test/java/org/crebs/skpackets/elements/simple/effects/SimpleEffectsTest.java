@@ -295,4 +295,20 @@ class SimpleEffectsTest {
             glow.verifyNoMoreInteractions();
         }
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void glowExplicitEmptyViewersDoesNotAffectOnlinePlayers(boolean state) {
+        Entity target = mock(Entity.class);
+        Player player1 = mock(Player.class);
+        try (MockedStatic<GlowingEntityManager> glow = statics(GlowingEntityManager.class);
+             MockedStatic<Bukkit> bukkit = statics(Bukkit.class)) {
+            bukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of(player1));
+            EffGlow effect = new EffGlow();
+            init(effect, 0, false, values(target), values(state), values(new Player[0]));
+            effect.execute(null);
+            glow.verifyNoInteractions();
+            bukkit.verifyNoInteractions();
+        }
+    }
 }

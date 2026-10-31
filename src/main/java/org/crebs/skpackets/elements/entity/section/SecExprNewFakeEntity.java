@@ -184,6 +184,7 @@ public class SecExprNewFakeEntity extends SectionExpression<WrapperEntity> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
+        if (generic || this.type == null) return "a new fake entity";
         String type = this.type.getName().getKey().toLowerCase(Locale.ENGLISH).replace("_", " ");
         return String.format("a new fake %s entity", type);
     }

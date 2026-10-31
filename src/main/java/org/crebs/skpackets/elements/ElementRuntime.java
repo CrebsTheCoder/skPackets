@@ -49,11 +49,12 @@ public final class ElementRuntime implements AutoCloseable {
                 PacketEvents.getAPI()
                         .getEventManager()
                         .registerListener(new EntityTracker(), PacketListenerPriority.MONITOR));
+        var glowingListener = new GlowingEntityListener();
+        plugin.getServer().getPluginManager().registerEvents(glowingListener, plugin);
         listeners.add(
                 PacketEvents.getAPI()
                         .getEventManager()
-                        .registerListener(
-                                new GlowingEntityListener(), PacketListenerPriority.NORMAL));
+                        .registerListener(glowingListener, PacketListenerPriority.NORMAL));
         listeners.add(
                 PacketEvents.getAPI()
                         .getEventManager()

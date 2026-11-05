@@ -3,6 +3,10 @@ package org.crebs.skpackets.api.general.packet;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.PacketEventsAPI;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import org.crebs.skpackets.api.simple.PlayerSkinRefresh;
+import org.crebs.skpackets.api.simple.FakeInventoryManager;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
@@ -43,6 +47,39 @@ class PacketEventsNullUuidTest {
         UserDisconnectEvent disconnect = new UserDisconnectEvent(user);
         assertDoesNotThrow(() -> new ChatSessionListener().onUserDisconnect(disconnect));
         assertDoesNotThrow(() -> new EntityTracker().onUserDisconnect(disconnect));
+    }
+
+    @Test
+    void skinRefreshIgnoresPacketsWithoutAssignedUuid() throws ReflectiveOperationException {
+        User user = connectingUser();
+        PacketEventsAPI<?> api = mock(PacketEventsAPI.class, RETURNS_DEEP_STUBS);
+        try (var packets = mockStatic(PacketEvents.class); var bukkit = mockStatic(Bukkit.class)) {
+            packets.when(PacketEvents::getAPI).thenReturn(api);
+            bukkit.when(Bukkit::getPluginManager).thenReturn(mock(PluginManager.class));
+            FakeInventoryManager inventory = new FakeInventoryManager(mock(JavaPlugin.class));
+            PacketSendEvent inventorySent = mock(PacketSendEvent.class);
+            when(inventorySent.getUser()).thenReturn(user);
+            when(inventorySent.getPacketType()).thenReturn(PacketType.Play.Server.WINDOW_ITEMS);
+            assertDoesNotThrow(() -> inventory.onPacketSend(inventorySent));
+            PacketReceiveEvent inventoryReceived = mock(PacketReceiveEvent.class);
+            when(inventoryReceived.getUser()).thenReturn(user);
+            when(inventoryReceived.getPacketType()).thenReturn(PacketType.Play.Client.CLICK_WINDOW);
+            assertDoesNotThrow(() -> inventory.onPacketReceive(inventoryReceived));
+            inventory.close();
+            PlayerSkinRefresh refresh = new PlayerSkinRefresh(mock(JavaPlugin.class));
+            try {
+                PacketSendEvent sent = mock(PacketSendEvent.class);
+                when(sent.getUser()).thenReturn(user);
+                when(sent.getPacketType()).thenReturn(PacketType.Play.Server.JOIN_GAME);
+                assertDoesNotThrow(() -> refresh.onPacketSend(sent));
+                PacketReceiveEvent received = mock(PacketReceiveEvent.class);
+                when(received.getUser()).thenReturn(user);
+                when(received.getPacketType()).thenReturn(PacketType.Play.Client.TELEPORT_CONFIRM);
+                assertDoesNotThrow(() -> refresh.onPacketReceive(received));
+            } finally {
+                refresh.close();
+            }
+        }
     }
 
     @Test

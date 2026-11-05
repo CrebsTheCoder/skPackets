@@ -57,6 +57,7 @@ public final class FakeInventoryManager extends PacketListenerAbstract
                 && event.getPacketType() != PacketType.Play.Server.SET_SLOT
                 && event.getPacketType() != PacketType.Play.Server.SET_PLAYER_INVENTORY) return;
         UUID id = event.getUser().getUUID();
+        if (id == null) return;
         if (event.getPacketType() == PacketType.Play.Server.SET_PLAYER_INVENTORY) {
             var packet = new WrapperPlayServerSetPlayerInventory(event);
             var values = overrides.get(new Key(id, 0));
@@ -231,6 +232,7 @@ public final class FakeInventoryManager extends PacketListenerAbstract
                 || event.isCancelled()
                 || event.getPacketType() != PacketType.Play.Client.CLICK_WINDOW) return;
         UUID id = event.getUser().getUUID();
+        if (id == null) return;
         Window tracked = containers.get(id);
         if (!overrides.containsKey(new Key(id, 0))
                 && (tracked == null || !overrides.containsKey(new Key(id, tracked.id())))) return;

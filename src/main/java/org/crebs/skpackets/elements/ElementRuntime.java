@@ -77,6 +77,7 @@ public final class ElementRuntime implements AutoCloseable {
         }
         listeners.clear();
         EntityTracker.clear();
+        PlayerSkinRegistry.clear();
         GlowingEntityManager.clear();
         EntityLib.shutdown();
     }

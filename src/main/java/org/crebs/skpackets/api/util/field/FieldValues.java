@@ -83,41 +83,38 @@ public final class FieldValues {
                 continue;
             }
 
-            Object newValue;
-            Class<?> expected = accessor.expectedType();
-
-            if (expected.isArray()) {
-                Class<?> componentType = expected.getComponentType();
-                Object typedArray = Array.newInstance(componentType, delta.length);
-                for (int i = 0; i < delta.length; i++) {
-                    Array.set(typedArray, i, delta[i]);
-                }
-                newValue = typedArray;
-            } else {
-                if (delta.length == 1) {
-                    newValue = delta[0];
-                } else {
-                    newValue = delta;
-                }
-            }
-
-            boolean isCompatible = expected == Object.class || expected.isInstance(newValue);
-            if (!isCompatible && expected.isArray() && newValue.getClass().isArray()) {
-                isCompatible = true;
-            }
-
-            if (!isCompatible) {
-                Skript.warning(
-                        "Cannot set the " + kind + " field '"
-                                + accessor.name()
-                                + "' to a value of type "
-                                + newValue.getClass().getSimpleName()
-                                + ". Expected type: "
-                                + expected.getSimpleName());
-                continue;
-            }
-
             try {
+                Object newValue;
+                Class<?> expected = accessor.expectedType();
+
+                if (expected.isArray()) {
+                    Class<?> componentType = expected.getComponentType();
+                    Object typedArray = Array.newInstance(componentType, delta.length);
+                    for (int i = 0; i < delta.length; i++) {
+                        Array.set(typedArray, i, delta[i]);
+                    }
+                    newValue = typedArray;
+                } else {
+                    if (delta.length == 1) {
+                        newValue = delta[0];
+                    } else {
+                        newValue = delta;
+                    }
+                }
+
+                boolean isCompatible = expected == Object.class || expected.isInstance(newValue);
+
+                if (!isCompatible) {
+                    Skript.warning(
+                            "Cannot set the " + kind + " field '"
+                                    + accessor.name()
+                                    + "' to a value of type "
+                                    + newValue.getClass().getSimpleName()
+                                    + ". Expected type: "
+                                    + expected.getSimpleName());
+                    continue;
+                }
+
                 ((BiConsumer<T, Object>) accessor.setter()).accept(entity, newValue);
             } catch (IllegalArgumentException exception) {
                 Skript.error(exception.getMessage());

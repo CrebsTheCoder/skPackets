@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.crebs"
-version = "1.0"
+version = "1.0.1"
 
 val mockitoAgent by configurations.creating
 

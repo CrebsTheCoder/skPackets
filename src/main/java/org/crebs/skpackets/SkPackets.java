@@ -69,7 +69,7 @@ public final class SkPackets extends JavaPlugin {
         } catch (ClassNotFoundException exception) {
             getLogger()
                     .severe(
-                            "PacketEvents 2.14 requires Adventure 4. Use Paper 26.1.2; Adventure 5"
+                            "PacketEvents 2.14 requires Adventure 4. This server is incompatible; Adventure 5"
                                     + " servers are not supported yet.");
             getServer().getPluginManager().disablePlugin(this);
             return;

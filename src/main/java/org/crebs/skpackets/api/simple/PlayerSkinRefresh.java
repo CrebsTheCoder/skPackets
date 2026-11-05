@@ -88,6 +88,7 @@ public final class PlayerSkinRefresh extends PacketListenerAbstract
     public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (closed || event.isCancelled()) return;
         UUID id = event.getUser().getUUID();
+        if (id == null) return;
         if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
             var packet = new WrapperPlayServerJoinGame(event);
             worldStates.put(id, new WorldState(packet.getWorldName(), packet.isDebug(), packet.isFlat()));
@@ -116,6 +117,7 @@ public final class PlayerSkinRefresh extends PacketListenerAbstract
                 || event.isCancelled()
                 || event.getPacketType() != PacketType.Play.Client.TELEPORT_CONFIRM) return;
         UUID id = event.getUser().getUUID();
+        if (id == null) return;
         int teleport = new WrapperPlayClientTeleportConfirm(event).getTeleportId();
         Set<Integer> ours = skinTeleports.get(id);
         if (ours != null && ours.remove(teleport)) {

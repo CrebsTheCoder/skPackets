@@ -66,12 +66,11 @@ public class PlayerSkinRegistry implements Listener {
         skins.remove(event.getPlayer().getUniqueId());
     }
 
-    public static Skin getSkin(UUID ownerId) {
-        Skin skin = skins.get(ownerId);
-        if (skin == null) {
-            throw new IllegalStateException("No Skin found for " + ownerId);
-        }
+    public static void clear() {
+        skins.clear();
+    }
 
-        return skin;
+    public static @org.jetbrains.annotations.Nullable Skin getSkin(UUID ownerId) {
+        return skins.get(ownerId);
     }
 }

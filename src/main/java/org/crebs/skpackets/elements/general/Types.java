@@ -50,6 +50,44 @@ import java.util.stream.Collectors;
 
 public class Types {
 
+    public static class PacketTypeParser extends Parser<PacketTypeCommon> {
+        @Override
+        public @Nullable PacketTypeCommon parse(String input, ParseContext context) {
+            input = input.trim().toLowerCase(Locale.ENGLISH).replaceAll("\\s+", " ");
+            boolean clientbound;
+            String name;
+            if (input.startsWith("clientbound ")) {
+                clientbound = true;
+                name = input.substring("clientbound ".length());
+            } else if (input.startsWith("serverbound ")) {
+                clientbound = false;
+                name = input.substring("serverbound ".length());
+            } else {
+                return null;
+            }
+            PacketTypeCommon type = PacketTypeRegistry.getPacket(name, clientbound);
+            if (type == null && name.endsWith(" packet")) {
+                return PacketTypeRegistry.getPacket(name.substring(0, name.length() - " packet".length()).trim(), clientbound);
+            }
+            return type;
+        }
+
+        @Override
+        public String toString(PacketTypeCommon type, int flags) {
+            String direction = type.getSide() == PacketSide.SERVER ? "clientbound" : "serverbound";
+            String state = PacketTypeRegistry.getProtocolState(type);
+            return direction + " " + (state.equals("play") ? "" : state + " ")
+                    + type.getName().toLowerCase(Locale.ENGLISH).replace('_', ' ');
+        }
+
+        @Override
+        public String toVariableNameString(PacketTypeCommon type) {
+            String direction = type.getSide() == PacketSide.SERVER ? "clientbound" : "serverbound";
+            return "packettype:" + direction + ":" + PacketTypeRegistry.getProtocolState(type) + ":"
+                    + type.getName().toLowerCase(Locale.ENGLISH).replace('_', ' ');
+        }
+    }
+
     @SuppressWarnings("UnstableApiUsage")
     public static void register(Registration reg) {
         reg.newType(PacketWrapper.class, "packet")
@@ -91,7 +129,8 @@ public class Types {
                 .user("packet ?types?")
                 .name("General - Packet Type")
                 .description(
-                        "Represents a specific type of packet (e.g. clientbound chunk data packet)")
+                        "Represents a specific packet type. Unqualified names prefer gameplay packets. "
+                                + "Use a state qualifier for other phases, such as clientbound configuration keep alive packet.")
                 .examples(
                         """
                         on any packet:
@@ -100,55 +139,7 @@ public class Types {
                         """)
                 .since("1.0.0")
                 .supplier(() -> PacketTypeRegistry.getAllPackets().iterator())
-                .parser(
-                        new Parser<>() {
-
-                            @Override
-                            public @Nullable PacketTypeCommon parse(
-                                    String input, ParseContext context) {
-                                input = input.trim().toLowerCase(Locale.ENGLISH);
-                                if (input.endsWith(" packet")) {
-                                    input =
-                                            input.substring(0, input.length() - " packet".length())
-                                                    .trim()
-                                                    .toLowerCase(Locale.ENGLISH);
-                                }
-
-                                boolean isClientBound;
-                                String name;
-
-                                if (input.startsWith("clientbound ")) {
-                                    isClientBound = true;
-                                    name = input.substring("clientbound ".length());
-                                } else if (input.startsWith("serverbound ")) {
-                                    isClientBound = false;
-                                    name = input.substring("serverbound ".length());
-                                } else {
-                                    return null;
-                                }
-
-                                return PacketTypeRegistry.getPacket(name, isClientBound);
-                            }
-
-                            @Override
-                            public String toString(PacketTypeCommon type, int flags) {
-                                return (type.getSide().equals(PacketSide.SERVER)
-                                                ? "clientbound"
-                                                : "serverbound")
-                                        + " "
-                                        + type.getName()
-                                                .toLowerCase(Locale.ENGLISH)
-                                                .replace("_", " ");
-                            }
-
-                            @Override
-                            public String toVariableNameString(PacketTypeCommon type) {
-                                return "packettype:"
-                                        + type.getName()
-                                                .toLowerCase(Locale.ENGLISH)
-                                                .replace("_", " ");
-                            }
-                        })
+                .parser(new PacketTypeParser())
                 .register();
 
         reg.newType(BlockEntityType.class, "blockentitytype")

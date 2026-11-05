@@ -56,7 +56,7 @@ public class PacketFieldRegistry extends BaseFieldRegistry<PacketTypeCommon, Pac
             }
         } catch (ClassNotFoundException ignored) {
             LogUtil.error(
-                    "SkBee not found, PacketEventsSK elements depending on NBT will not be"
+                    "SkBee NBT API not found, skPackets elements depending on NBT will not be"
                             + " registered");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to hook into SkBee NBT", e);

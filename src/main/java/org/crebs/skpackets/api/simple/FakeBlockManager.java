@@ -154,10 +154,11 @@ public final class FakeBlockManager extends PacketListenerAbstract
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onPacketSend(@org.jetbrains.annotations.NotNull PacketSendEvent event) {
         if (closed || event.isCancelled()) return;
         UUID id = event.getUser().getUUID();
-        if (!active.contains(id)) return;
+        if (id == null || !active.contains(id)) return;
         UUID world = worlds.get(id);
         if (world == null) return;
         if (event.getPacketType() == PacketType.Play.Server.CHUNK_DATA) {

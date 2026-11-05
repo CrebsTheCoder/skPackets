@@ -1,7 +1,6 @@
 package org.crebs.skpackets;
 
 import com.github.shanebeee.skr.Registration;
-
 import org.bukkit.plugin.java.JavaPlugin;
 import org.crebs.skpackets.api.entity.PacketEntityManager;
 import org.crebs.skpackets.api.simple.FakeBlockManager;
@@ -9,8 +8,11 @@ import org.crebs.skpackets.api.simple.FakeEquipmentManager;
 import org.crebs.skpackets.api.simple.FakeInventoryManager;
 import org.crebs.skpackets.api.team.PacketTeamManager;
 import org.crebs.skpackets.elements.ElementCounts;
-import org.crebs.skpackets.elements.ElementRegistration;
 import org.crebs.skpackets.elements.ElementRuntime;
+import org.crebs.skpackets.elements.entity.EntityModule;
+import org.crebs.skpackets.elements.general.GeneralModule;
+import org.crebs.skpackets.elements.simple.SimpleModule;
+import org.crebs.skpackets.elements.team.TeamModule;
 
 public final class SkPackets extends JavaPlugin {
     private static SkPackets instance;
@@ -67,7 +69,7 @@ public final class SkPackets extends JavaPlugin {
         } catch (ClassNotFoundException exception) {
             getLogger()
                     .severe(
-                            "PacketEvents 2.14 requires Adventure 4. Use Paper 26.1.2; Adventure 5"
+                            "PacketEvents 2.14 requires Adventure 4. This server is incompatible; Adventure 5"
                                     + " servers are not supported yet.");
             getServer().getPluginManager().disablePlugin(this);
             return;
@@ -81,7 +83,12 @@ public final class SkPackets extends JavaPlugin {
         skinRefresh = new org.crebs.skpackets.api.simple.PlayerSkinRefresh(this);
         fakeEquipment = new FakeEquipmentManager(this);
         registration = new Registration(getName(), true);
-        ElementRegistration.register(registration);
+        registration.getAddon().loadModules(
+                new GeneralModule(registration),
+                new SimpleModule(registration),
+                new EntityModule(registration),
+                new TeamModule(registration));
+        registration.finalizeRegistration();
         ElementCounts.log(registration, getServer().getConsoleSender());
     }
 

@@ -87,7 +87,7 @@ public class ServerBoundPacketFieldRegistrar implements FieldRegistrar {
                 .requiredField(
                         Boolean.class,
                         w -> w.isSneaking().orElse(false),
-                        WrapperPlayClientInteractEntity::setSneaking,
+                        (w, sneaking) -> w.setSneaking(Boolean.TRUE.equals(sneaking)),
                         "sneaking state",
                         "sneaking")
                 .constructor(

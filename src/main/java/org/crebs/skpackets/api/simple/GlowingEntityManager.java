@@ -57,18 +57,20 @@ public class GlowingEntityManager {
     }
 
     public static void setGlowingReceivers(int glowingEntityId, List<UUID> glowingReceivers) {
+        if (glowingReceivers == null) {
+            return;
+        }
         Entity glowingEntity = getById(glowingEntityId);
-        if (glowingEntity == null || glowingReceivers == null) {
+        if (glowingEntity == null) {
+            glowingMap.remove(glowingEntityId);
             return;
         }
 
         Set<UUID> oldReceivers = glowingMap.get(glowingEntityId);
+        Set<UUID> toRemove = new HashSet<>();
         if (oldReceivers != null) {
-            Set<UUID> toRemove = new HashSet<>(oldReceivers);
+            toRemove.addAll(oldReceivers);
             glowingReceivers.forEach(toRemove::remove);
-            if (!toRemove.isEmpty()) {
-                sendGlowPacket(glowingEntity, toRemove, false);
-            }
         }
 
         Set<UUID> newReceivers = new HashSet<>(glowingReceivers);
@@ -82,6 +84,10 @@ public class GlowingEntityManager {
             Set<UUID> receivers = ConcurrentHashMap.newKeySet();
             receivers.addAll(glowingReceivers);
             glowingMap.put(glowingEntityId, receivers);
+        }
+
+        if (!toRemove.isEmpty()) {
+            sendGlowPacket(glowingEntity, toRemove, false);
         }
 
         if (!newReceivers.isEmpty()) {
@@ -117,10 +123,9 @@ public class GlowingEntityManager {
         addGlowingReceivers(glowingEntity, Collections.singletonList(playerToAdd));
     }
 
-    public static void removeGlowingReceivers(
-            int glowingEntityId, Collection<UUID> playersToRemove) {
+    public static void removeGlowingReceivers(int glowingEntityId, Collection<UUID> playersToRemove) {
         Entity glowingEntity = getById(glowingEntityId);
-        if (glowingEntity == null || playersToRemove == null || playersToRemove.isEmpty()) {
+        if (playersToRemove == null || playersToRemove.isEmpty()) {
             return;
         }
 
@@ -154,6 +159,20 @@ public class GlowingEntityManager {
         if (glowingEntity != null && oldReceivers != null) {
             sendGlowPacket(glowingEntity, oldReceivers, false);
         }
+    }
+
+    public static void forgetEntity(int entityId) {
+        glowingMap.remove(entityId);
+    }
+
+    public static void forgetViewer(UUID viewerId) {
+        if (viewerId == null) {
+            return;
+        }
+        glowingMap.forEach((entityId, receivers) -> glowingMap.computeIfPresent(entityId, (id, current) -> {
+            current.remove(viewerId);
+            return current.isEmpty() ? null : current;
+        }));
     }
 
     public static boolean isGlowingFor(int entityId, UUID receiverId) {

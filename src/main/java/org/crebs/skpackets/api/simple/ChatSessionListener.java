@@ -30,13 +30,13 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPl
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class ChatSessionListener implements PacketListener {
 
-    private static final Map<UUID, RemoteChatSession> sessions = new HashMap<>();
+    private static final Map<UUID, RemoteChatSession> sessions = new ConcurrentHashMap<>();
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
@@ -55,11 +55,15 @@ public class ChatSessionListener implements PacketListener {
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onUserDisconnect(UserDisconnectEvent event) {
-        sessions.remove(event.getUser().getUUID());
+        UUID ownerId = event.getUser().getUUID();
+        if (ownerId != null) {
+            sessions.remove(ownerId);
+        }
     }
 
     public static @Nullable RemoteChatSession getChatSession(UUID ownerId) {
-        return sessions.getOrDefault(ownerId, null);
+        return ownerId == null ? null : sessions.get(ownerId);
     }
 }

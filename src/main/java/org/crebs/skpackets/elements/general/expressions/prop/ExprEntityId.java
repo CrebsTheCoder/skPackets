@@ -21,20 +21,19 @@
 package org.crebs.skpackets.elements.general.expressions.prop;
 
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-
 import com.github.shanebeee.skr.Registration;
-
+import me.tofaa.entitylib.wrapper.WrapperEntity;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
-public class ExprEntityId extends SimplePropertyExpression<Entity, Integer> {
+public class ExprEntityId extends SimplePropertyExpression<Object, Integer> {
 
     public static void register(Registration reg) {
         reg.newPropertyExpression(
                         ExprEntityId.class,
                         Integer.class,
                         "(protocol|packet) [entity][ ]id",
-                        "entity")
+                        "entity/packetentity")
                 .name("General - Entity ID Of Entity")
                 .description("Gets the entity id of an entity on the server")
                 .examples(
@@ -51,8 +50,12 @@ public class ExprEntityId extends SimplePropertyExpression<Entity, Integer> {
     }
 
     @Override
-    public @Nullable Integer convert(Entity entity) {
-        return entity.getEntityId();
+    public @Nullable Integer convert(Object entity) {
+        return switch (entity) {
+            case Entity real -> real.getEntityId();
+            case WrapperEntity fake -> fake.getEntityId();
+            default -> null;
+        };
     }
 
     @Override

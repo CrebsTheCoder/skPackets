@@ -37,7 +37,7 @@ public final class ExprFakeEntityEntityId extends ExprFakeEntityField {
                 .newPropertyExpression(
                         ExprFakeEntityEntityId.class,
                         Object.class,
-                        "(fake|packet) entity [field] [entity] id",
+                        "(fake entity [field] [entity] id|packet entity field [entity] id|packet entity entity id)",
                         "packetentity")
                 .name("Fake Entity - Entity ID")
                 .description(

@@ -44,10 +44,12 @@ public class SkinManager {
         if (user == null) return null;
         List<TextureProperty> properties = user.getProfile().getTextureProperties();
 
-        return new Skin(properties);
+        return properties.isEmpty() ? null : new Skin(properties);
     }
 
     public static @org.jetbrains.annotations.Nullable Skin getOfflinePlayer(final String playerName) {
+
+        if (playerName == null || playerName.isBlank()) return null;
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getName().equalsIgnoreCase(playerName)) {
@@ -61,7 +63,9 @@ public class SkinManager {
         }
 
         UUID uuid = MojangAPIUtil.requestPlayerUUID(playerName);
+        if (uuid == null) return null;
         List<TextureProperty> properties = MojangAPIUtil.requestPlayerTextureProperties(uuid);
+        if (properties == null || properties.isEmpty()) return null;
 
         skin = new Skin(properties);
         skinCache.put(playerName, skin);

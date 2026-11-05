@@ -1,21 +1,23 @@
 package org.crebs.skpackets.api.entity;
 
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-
 import me.tofaa.entitylib.wrapper.WrapperEntity;
 import me.tofaa.entitylib.wrapper.WrapperLivingEntity;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -26,6 +28,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
             WrapperEntity entity, UUID world, boolean persistent, Set<UUID> viewers) {}
 
     private final Map<Integer, Tracked> entities = new HashMap<>();
+    private final RealEntityPassengerManager realPassengers = new RealEntityPassengerManager();
     private final JavaPlugin plugin;
     private boolean closed;
 
@@ -139,7 +142,23 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         checkThread();
         Tracked tracked = requireTracked(entity);
         tracked.viewers().remove(viewer);
+        realPassengers.removeViewer(entity, viewer);
         entity.removeViewer(viewer);
+    }
+
+    public void updateRealPassengers(Entity vehicle, Collection<WrapperEntity> passengers, boolean mount) {
+        checkThread();
+        if (mount) {
+            for (WrapperEntity passenger : passengers) {
+                if (passenger.getRiding() != null) passenger.getRiding().removePassenger(passenger);
+            }
+        }
+        realPassengers.update(vehicle, passengers, mount);
+    }
+
+    public void removeRealPassenger(WrapperEntity passenger) {
+        checkThread();
+        realPassengers.remove(passenger);
     }
 
     public void teleport(WrapperEntity entity, Location location) {
@@ -152,6 +171,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         UUID world = location.getWorld().getUID();
         boolean changedWorld = !tracked.world().equals(world);
         if (changedWorld) {
+            realPassengers.remove(entity);
             for (UUID viewer : Set.copyOf(entity.getViewers())) {
                 entity.removeViewer(viewer);
             }
@@ -177,6 +197,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         }
         requireTracked(entity);
         entities.remove(entity.getEntityId());
+        realPassengers.remove(entity);
         entity.remove();
     }
 
@@ -205,7 +226,11 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
                             if (closed || !player.isOnline()) {
                                 return;
                             }
-                            entities.values().removeIf(tracked -> !tracked.entity().isSpawned());
+                            entities.values().removeIf(tracked -> {
+                                if (tracked.entity().isSpawned()) return false;
+                                realPassengers.remove(tracked.entity());
+                                return true;
+                            });
                             for (Tracked tracked : entities.values()) {
                                 show(tracked, player);
                             }
@@ -213,6 +238,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
     }
 
     private void hide(Player player) {
+        realPassengers.forgetViewer(player.getUniqueId());
         for (Tracked tracked : entities.values()) {
             tracked.entity().removeViewer(player.getUniqueId());
         }
@@ -226,6 +252,8 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         UUID id = event.getPlayer().getUniqueId();
+        realPassengers.forgetViewer(id);
+        realPassengers.forgetVehicle(event.getPlayer());
         for (var iterator = entities.values().iterator(); iterator.hasNext(); ) {
             Tracked tracked = iterator.next();
             tracked.entity().handleViewerDisconnect(id);
@@ -233,6 +261,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
                     && tracked.viewers().remove(id)
                     && tracked.viewers().isEmpty()) {
                 iterator.remove();
+                realPassengers.remove(tracked.entity());
                 tracked.entity().remove();
             }
         }
@@ -240,14 +269,31 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
 
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
+        realPassengers.forgetVehicle(event.getPlayer());
         hide(event.getPlayer());
         restore(event.getPlayer());
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
+        realPassengers.forgetVehicle(event.getPlayer());
         hide(event.getPlayer());
         restore(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onDeath(EntityDeathEvent event) {
+        realPassengers.forgetVehicle(event.getEntity());
+    }
+
+    @EventHandler
+    public void onRemove(EntityRemoveEvent event) {
+        realPassengers.forgetVehicle(event.getEntity());
+    }
+
+    @EventHandler
+    public void onUnload(EntitiesUnloadEvent event) {
+        event.getEntities().forEach(realPassengers::forgetVehicle);
     }
 
     private void checkThread() {
@@ -262,6 +308,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
     @Override
     public void close() {
         checkThread();
+        realPassengers.clear();
         for (Tracked tracked : entities.values()) {
             tracked.entity().remove();
         }

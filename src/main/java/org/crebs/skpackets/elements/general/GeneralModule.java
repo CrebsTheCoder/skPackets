@@ -21,6 +21,7 @@
 package org.crebs.skpackets.elements.general;
 
 import com.github.shanebeee.skr.Registration;
+import org.crebs.skpackets.elements.RegistrationModule;
 import org.crebs.skpackets.elements.general.condition.CondPacketTypeIsBound;
 import org.crebs.skpackets.elements.general.effects.EffCancelPacket;
 import org.crebs.skpackets.elements.general.effects.EffFetchSkin;
@@ -34,51 +35,31 @@ import org.crebs.skpackets.elements.general.expressions.prop.ExprPacketPacketTyp
 import org.crebs.skpackets.elements.general.expressions.prop.ExprPlayerSkin;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.crebs.skpackets.elements.general.section.SecExprNewPacket;
+import org.skriptlang.skript.addon.SkriptAddon;
 
-public final class GeneralElementRegistration {
+public record GeneralModule(Registration registration) implements RegistrationModule {
 
-    public static void register(Registration registration) {
-        registerFields();
-        registerTypes(registration);
-        registerConditions(registration);
-        registerEffects(registration);
-        registerEvents(registration);
-        registerSections(registration);
-        registerExpressions(registration);
+    @Override
+    public String name() {
+        return "general";
     }
 
-    private static void registerFields() {
+    @Override
+    public void load(SkriptAddon addon) {
         PacketFieldRegistry.INSTANCE.registerAll();
-    }
-
-    private static void registerTypes(Registration registration) {
-        Types.register(registration);
-    }
-
-    private static void registerConditions(Registration registration) {
-        CondPacketTypeIsBound.register(registration);
-    }
-
-    private static void registerEffects(Registration registration) {
-        EffCancelPacket.register(registration);
-        EffFetchSkin.register(registration);
-        EffSendOrReceivePacket.register(registration);
-    }
-
-    private static void registerEvents(Registration registration) {
-        EvtPacketSendOrReceive.register(registration);
-        EvtNettyPacket.register(registration);
-    }
-
-    private static void registerSections(Registration registration) {
-        SecExprNewPacket.register(registration);
-    }
-
-    private static void registerExpressions(Registration registration) {
-        ExprEntityId.register(registration);
-        ExprPacketField.register(registration);
-        ExprPacketPacketType.register(registration);
-        ExprPlayerSkin.register(registration);
-        ExprSkinFromValue.register(registration);
+        register(registration,
+                Types::register,
+                CondPacketTypeIsBound::register,
+                EffCancelPacket::register,
+                EffFetchSkin::register,
+                EffSendOrReceivePacket::register,
+                EvtPacketSendOrReceive::register,
+                EvtNettyPacket::register,
+                SecExprNewPacket::register,
+                ExprEntityId::register,
+                ExprPacketField::register,
+                ExprPacketPacketType::register,
+                ExprPlayerSkin::register,
+                ExprSkinFromValue::register);
     }
 }

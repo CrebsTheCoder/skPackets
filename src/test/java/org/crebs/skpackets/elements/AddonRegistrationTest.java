@@ -37,7 +37,8 @@ class AddonRegistrationTest {
     @Test
     void registersAllModulesWithoutDuplicateTypes() throws Exception {
         PacketEventsTestBootstrap.initialize();
-        Skript skript = Skript.of(AddonRegistrationTest.class, "skPackets");
+        // Skript requires the host name to differ from the addon name.
+        Skript skript = Skript.of(AddonRegistrationTest.class, "skPackets-test");
         skript.storeRegistry(EventValueRegistry.class, EventValueRegistry.empty(skript));
         try (var snapshots = new RegistrySnapshots(
                 Classes.class, Comparators.class, Converters.class,

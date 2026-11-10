@@ -1,5 +1,7 @@
 package org.crebs.skpackets.elements.general.field;
 
+import org.crebs.skpackets.api.general.packet.PacketAccessManager;
+
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.crebs.skpackets.api.util.field.BaseFieldRegistry;
@@ -9,6 +11,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 record PacketFieldBinding(
         String name,
@@ -16,8 +20,8 @@ record PacketFieldBinding(
         Type nativeType,
         boolean optional,
         boolean nullable,
-        Method getter,
-        Method setter,
+        Function<Object, Object> getter,
+        BiConsumer<Object, Object> setter,
         PacketFieldRule rule) {
 
     static PacketFieldBinding parameter(Class<?> wrapper, PacketConstructor.Argument argument, List<Method> methods) {
@@ -34,12 +38,20 @@ record PacketFieldBinding(
         if (getter != null) names.add(PacketReflection.fieldName(getter.getName().replaceFirst("^(get|is|has)", "")));
         String name = names.removeFirst();
         boolean optional = argument.nullable() || PacketArguments.raw(argument.type()) == Optional.class || rule.defaultValue() != null;
-        return new PacketFieldBinding(name, List.copyOf(names), argument.type(), optional, argument.nullable(), getter, setter, rule);
+        return new PacketFieldBinding(name, List.copyOf(names), argument.type(), optional, argument.nullable(), reader(getter), writer(setter), rule);
     }
 
     static PacketFieldBinding extra(Method getter, Method setter) {
         String name = PacketReflection.fieldName(setter.getName().substring(3));
-        return new PacketFieldBinding(name, List.of(), setter.getGenericParameterTypes()[0], true, false, getter, setter, PacketFieldRule.DEFAULT);
+        return new PacketFieldBinding(name, List.of(), setter.getGenericParameterTypes()[0], true, false, reader(getter), writer(setter), PacketFieldRule.DEFAULT);
+    }
+
+    private static Function<Object, Object> reader(Method getter) {
+        return getter == null ? null : PacketAccessManager.reader(getter);
+    }
+
+    private static BiConsumer<Object, Object> writer(Method setter) {
+        return setter == null ? null : PacketAccessManager.writer(setter);
     }
 
     Class<?> skriptType() {
@@ -69,13 +81,13 @@ record PacketFieldBinding(
     }
 
     Object read(PacketWrapper<?> packet) {
-        Object value = PacketReflection.invoke(getter, packet);
+        Object value = getter.apply(packet);
         if (rule.adapter() != null) return rule.adapter().reader().apply(packet, value);
         return typedArray(PacketArguments.toSkript(value), skriptType());
     }
 
     void write(PacketWrapper<?> packet, Object value) {
-        PacketReflection.invoke(setter, packet, encode(value));
+        setter.accept(packet, encode(value));
     }
 
     private Object encode(Object value) {

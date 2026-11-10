@@ -77,7 +77,8 @@ class EntityLookupExpressionsTest {
         var expression = new ExprFakeEntityFromUuid();
         Expression<?>[] inputs = {input(wanted)};
         assertTrue(expression.init(inputs, 0, Kleenean.FALSE, new ParseResult("", inputs)));
-        try (var library = mockStatic(EntityLib.class, withSettings().mockMaker(MockMakers.INLINE))) {
+        try (var plugin = mockStatic(org.crebs.skpackets.SkPackets.class, withSettings().mockMaker(MockMakers.INLINE));
+             var library = mockStatic(EntityLib.class, withSettings().mockMaker(MockMakers.INLINE))) {
             library.when(EntityLib::get).thenReturn(lib);
             assertArrayEquals(new WrapperEntity[]{second}, expression.get(event));
             inputs[0] = input(UUID.randomUUID());
@@ -90,6 +91,25 @@ class EntityLookupExpressionsTest {
             verifyNoInteractions(lib);
         }
         assertTrue(expression.isSingle());
+    }
+
+    @Test
+    void managedUuidLookupDoesNotScanEntityLib() {
+        UUID wanted = UUID.randomUUID();
+        WrapperEntity entity = mock(WrapperEntity.class);
+        var manager = mock(org.crebs.skpackets.api.entity.PacketEntityManager.class);
+        var plugin = mock(org.crebs.skpackets.SkPackets.class);
+        when(plugin.getPacketEntities()).thenReturn(manager);
+        when(manager.getEntity(wanted)).thenReturn(java.util.Optional.of(entity));
+        var expression = new ExprFakeEntityFromUuid();
+        Expression<?>[] inputs = {input(wanted)};
+        expression.init(inputs, 0, Kleenean.FALSE, new ParseResult("", inputs));
+        try (var plugins = mockStatic(org.crebs.skpackets.SkPackets.class);
+             var library = mockStatic(EntityLib.class)) {
+            plugins.when(org.crebs.skpackets.SkPackets::getInstance).thenReturn(plugin);
+            assertArrayEquals(new WrapperEntity[]{entity}, expression.get(event));
+            library.verifyNoInteractions();
+        }
     }
 
     @Test

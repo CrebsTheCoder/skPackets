@@ -1,5 +1,7 @@
 package org.crebs.skpackets.elements.general.field;
 
+import org.crebs.skpackets.api.general.packet.PacketAccessManager;
+
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -13,12 +15,17 @@ import java.lang.classfile.MethodModel;
 import java.lang.classfile.TypeAnnotation;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.function.Function;
 
-record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument> arguments) {
+record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument> arguments,
+                         Function<Object[], Object> factory) {
+    private static final ClassValue<PacketConstructor> CONSTRUCTORS = new ClassValue<>() {
+        @Override protected PacketConstructor computeValue(Class<?> type) { return discover(type); }
+    };
+
     private static final Map<String, List<String>> PREFERRED = Map.of(
             "WrapperPlayClientInteractEntity", List.of("int", "InteractionHand", "Vector3d", "boolean"),
             "WrapperPlayServerBlockChange", List.of("Vector3i", "WrappedBlockState"),
@@ -38,6 +45,10 @@ record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument>
     }
 
     static PacketConstructor find(Class<?> wrapper) {
+        return CONSTRUCTORS.get(wrapper);
+    }
+
+    private static PacketConstructor discover(Class<?> wrapper) {
         Map<String, Constructor<?>> constructors = new HashMap<>();
         for (Constructor<?> constructor : wrapper.getConstructors()) {
             if (constructor.isAnnotationPresent(Deprecated.class) || Arrays.stream(constructor.getParameterTypes())
@@ -59,7 +70,7 @@ record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument>
                     if (!parameters[i].isNamePresent()) throw new IllegalStateException("Missing PacketEvents parameter names for " + constructor);
                     arguments.add(new Argument(parameters[i].getName(), parameters[i].getParameterizedType(), nullable(model, i)));
                 }
-                selected = new PacketConstructor(constructor, List.copyOf(arguments));
+                selected = new PacketConstructor(constructor, List.copyOf(arguments), PacketAccessManager.constructor(constructor));
             }
             if (selected != null) return selected;
         } catch (IOException exception) {
@@ -79,16 +90,15 @@ record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument>
             else args[i] = fields.get(argument.name()).constructorValue(values);
         }
         try {
-            PacketWrapper<?> packet = (PacketWrapper<?>) method.newInstance(args);
+            PacketWrapper<?> packet = (PacketWrapper<?>) factory.apply(args);
             if (packet.getPacketTypeData().getPacketType() == null) {
                 packet.getPacketTypeData().setPacketType(values.getKey());
                 packet.getPacketTypeData().setNativePacketId(values.getKey().getId(packet.getServerVersion().toClientVersion()));
             }
             return packet;
-        } catch (InvocationTargetException exception) {
-            throw new IllegalArgumentException("Cannot create " + values.getKey().getName() + ": " + exception.getCause().getMessage(), exception.getCause());
-        } catch (ReflectiveOperationException exception) {
-            throw new IllegalStateException("Cannot invoke PacketEvents constructor " + method, exception);
+        } catch (IllegalArgumentException exception) {
+            Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+            throw new IllegalArgumentException("Cannot create " + values.getKey().getName() + ": " + cause.getMessage(), cause);
         }
     }
 

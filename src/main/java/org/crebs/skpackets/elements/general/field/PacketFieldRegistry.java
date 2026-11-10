@@ -40,6 +40,7 @@ public class PacketFieldRegistry extends BaseFieldRegistry<PacketTypeCommon, Pac
 
         this.registrars.add(new org.crebs.skpackets.elements.team.TeamPacketFields());
         registerNbt();
+        this.registrars.add(new DirectPacketFields());
         this.registrars.add(new PacketFieldRegistrar());
     }
 
@@ -48,18 +49,24 @@ public class PacketFieldRegistry extends BaseFieldRegistry<PacketTypeCommon, Pac
             return;
         }
         try {
-            Class<?> nbtApiClass = Class.forName("com.shanebeestudios.skbee.api.nbt.NBTApi");
-            boolean enabled = (boolean) nbtApiClass.getMethod("isEnabled").invoke(null);
-            if (enabled) {
-                this.registrars.add(new NbtPacketFieldRegistrar());
+            FieldRegistrar registrar = SkBeeHook.registrar();
+            if (registrar != null) {
+                this.registrars.add(registrar);
                 LogUtil.info("Hooked into SkBee NBT using NBT-API");
             }
-        } catch (ClassNotFoundException ignored) {
+        } catch (NoClassDefFoundError ignored) {
             LogUtil.error(
                     "SkBee NBT API not found, skPackets elements depending on NBT will not be"
                             + " registered");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to hook into SkBee NBT", e);
+        }
+    }
+
+    private static final class SkBeeHook {
+        static FieldRegistrar registrar() {
+            return com.shanebeestudios.skbee.api.nbt.NBTApi.isEnabled()
+                    ? new NbtPacketFieldRegistrar() : null;
         }
     }
 

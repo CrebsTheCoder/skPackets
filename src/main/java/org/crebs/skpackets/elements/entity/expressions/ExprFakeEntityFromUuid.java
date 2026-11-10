@@ -80,7 +80,9 @@ public class ExprFakeEntityFromUuid extends SimpleExpression<WrapperEntity> {
     protected WrapperEntity @Nullable [] get(Event event) {
         UUID uuid = this.uuidExpr.getSingle(event);
         if (uuid == null) return null;
-        WrapperEntity entity =
+        var plugin = org.crebs.skpackets.SkPackets.getInstance();
+        WrapperEntity entity = plugin == null ? null : plugin.getPacketEntities().getEntity(uuid).orElse(null);
+        if (entity == null) entity =
                 EntityLib.get().getEntities().stream()
                         .filter(candidate -> candidate.getUuid().equals(uuid))
                         .findFirst()

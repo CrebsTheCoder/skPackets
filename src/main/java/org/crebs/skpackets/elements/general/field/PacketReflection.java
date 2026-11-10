@@ -1,15 +1,16 @@
 package org.crebs.skpackets.elements.general.field;
 
-import java.lang.reflect.*;
+import org.crebs.skpackets.api.general.packet.PacketAccessManager;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.*;
 
 final class PacketReflection {
     private PacketReflection() {}
 
     static List<Method> methods(Class<?> wrapper) {
-        return Arrays.stream(wrapper.getMethods())
-                .filter(method -> !method.isBridge() && !method.isSynthetic())
-                .sorted(Comparator.comparing(Method::toGenericString)).toList();
+        return PacketAccessManager.methods(wrapper);
     }
 
     static String fieldName(String name) {
@@ -68,16 +69,6 @@ final class PacketReflection {
                 .filter(m -> com.google.common.primitives.Primitives.wrap(m.getParameterTypes()[0])
                         == com.google.common.primitives.Primitives.wrap(parameter))
                 .findFirst().orElse(null);
-    }
-
-    static Object invoke(Method method, Object target, Object... args) {
-        try {
-            return method.invoke(target, args);
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException("PacketEvents field access failed: " + method.getName(), e.getCause());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Cannot access PacketEvents method " + method, e);
-        }
     }
 
 }

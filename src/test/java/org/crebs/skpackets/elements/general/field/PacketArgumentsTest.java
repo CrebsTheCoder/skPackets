@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class PacketArgumentsTest {
     List<UUID> ids;
@@ -88,6 +89,32 @@ class PacketArgumentsTest {
             assertThrows(IllegalArgumentException.class, () -> PacketArguments.convert(bad, byte.class, "data"));
         assertThrows(IllegalArgumentException.class, () -> PacketArguments.convert(Long.MAX_VALUE, int.class, "count"));
         assertEquals(Long.MAX_VALUE, PacketArguments.convert(Long.MAX_VALUE, long.class, "id"));
+    }
+
+    @Test void resourceKeysRoundTripWithoutLosingNamespace() {
+        var key = new org.bukkit.NamespacedKey("example", "some/path");
+        Object packetKey = PacketArguments.convert(key,
+                com.github.retrooper.packetevents.resources.ResourceLocation.class, "key");
+        assertEquals(key, PacketArguments.toSkript(packetKey));
+    }
+
+    @Test void rejectsResourceKeysThatBukkitCannotRepresent() {
+        var key = mock(com.github.retrooper.packetevents.resources.ResourceLocation.class);
+        when(key.toString()).thenReturn("invalid key");
+        var error = assertThrows(IllegalArgumentException.class, () -> PacketArguments.toSkript(key));
+        assertEquals("Invalid resource key: invalid key", error.getMessage());
+    }
+
+    @Test void rejectsItemTypesThatCannotProduceAnItem() throws ClassNotFoundException {
+        try (var skript = mockStatic(ch.njol.skript.Skript.class)) {
+            Class.forName(ch.njol.skript.aliases.ItemType.class.getName());
+        }
+        var item = mock(ch.njol.skript.aliases.ItemType.class);
+        when(item.getRandom()).thenReturn(null);
+        var error = assertThrows(IllegalArgumentException.class, () -> PacketArguments.convert(item,
+                com.github.retrooper.packetevents.protocol.item.type.ItemType.class, "item"));
+        assertTrue(error.getMessage().contains("Packet field 'item'"));
+        assertTrue(error.getMessage().contains("can produce an item"));
     }
 
     @Test void leavesQueuedModuleTypesToTheirExistingRegistrations() {

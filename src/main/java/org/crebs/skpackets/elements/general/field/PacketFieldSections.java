@@ -72,11 +72,15 @@ public final class PacketFieldSections {
                 if (!(node instanceof SectionNode child)) {
                     error("'" + name + "' requires a section per list entry."); return null;
                 }
-                if (!labels.add(child.getKey().toLowerCase(Locale.ROOT))) {
-                    error("Duplicate list entry in '" + name + "': " + child.getKey()); return null;
+                String label = child.getKey();
+                if (label == null) {
+                    error("List entries in '" + name + "' require a label."); return null;
+                }
+                if (!labels.add(label.toLowerCase(Locale.ROOT))) {
+                    error("Duplicate list entry in '" + name + "': " + label); return null;
                 }
                 Map<String, Expression<?>> record = new LinkedHashMap<>();
-                if (!parse(shape.fields(), child, record, name + "." + child.getKey())) return null;
+                if (!parse(shape.fields(), child, record, name + "." + label)) return null;
                 records.add(record);
             }
         } else {

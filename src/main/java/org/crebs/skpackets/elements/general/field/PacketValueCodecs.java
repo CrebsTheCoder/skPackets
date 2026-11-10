@@ -88,9 +88,9 @@ final class PacketValueCodecs {
                         value -> SpigotConversionUtil.fromBukkitEntityType(EntityUtils.toBukkitEntityType(value))),
                 of(PotionType.class, org.bukkit.potion.PotionEffectType.class,
                         SpigotConversionUtil::toBukkitPotionEffectType, SpigotConversionUtil::fromBukkitPotionEffectType),
-                of(com.github.retrooper.packetevents.protocol.item.type.ItemType.class, ItemType.class,
+                new PacketValueCodec<>(com.github.retrooper.packetevents.protocol.item.type.ItemType.class, ItemType.class,
                         value -> new ItemType(SpigotConversionUtil.toBukkitItemMaterial(value)),
-                        value -> SpigotConversionUtil.fromBukkitItemMaterial(value.getRandom().getType())),
+                        PacketValueCodecs::itemType),
                 of(SoundCategory.class, org.bukkit.SoundCategory.class,
                         PacketValueCodecs::soundCategory, PacketValueCodecs::soundCategory),
                 of(HumanoidArm.class, org.bukkit.inventory.MainHand.class,
@@ -98,7 +98,7 @@ final class PacketValueCodecs {
                 of(EntityPose.class, org.bukkit.entity.Pose.class,
                         SpigotConversionUtil::toBukkitPose, SpigotConversionUtil::fromBukkitPose),
                 of(ResourceLocation.class, NamespacedKey.class,
-                        value -> NamespacedKey.fromString(value.toString()), value -> new ResourceLocation(value.toString())),
+                        PacketValueCodecs::namespacedKey, value -> new ResourceLocation(value.toString())),
                 of(BossBar.Color.class, Color.class,
                         value -> BossBarUtils.rgbFromBarColor(BarColor.valueOf(value.name())), PacketValueCodecs::bossBarColor),
                 of(BossBar.Overlay.class, BarStyle.class,
@@ -127,6 +127,18 @@ final class PacketValueCodecs {
             if (codec.packetType().isAssignableFrom(type)) return codec;
         }
         return null;
+    }
+
+    private static NamespacedKey namespacedKey(ResourceLocation value) {
+        NamespacedKey key = NamespacedKey.fromString(value.toString());
+        if (key == null) throw new IllegalArgumentException("Invalid resource key: " + value);
+        return key;
+    }
+
+    private static com.github.retrooper.packetevents.protocol.item.type.ItemType itemType(ItemType value, String name) {
+        org.bukkit.inventory.ItemStack item = value.getRandom();
+        if (item == null) throw new IllegalArgumentException("Packet field '" + name + "' requires an item type that can produce an item.");
+        return SpigotConversionUtil.fromBukkitItemMaterial(item.getType());
     }
 
     private static org.bukkit.inventory.EquipmentSlot equipmentSlot(EquipmentSlot value) {

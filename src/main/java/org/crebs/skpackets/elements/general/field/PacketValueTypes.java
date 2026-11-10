@@ -33,9 +33,9 @@ public final class PacketValueTypes {
         Parser parser = info == null ? null : info.getParser();
         List<String> names = new ArrayList<>();
         for (Object constant : type.getEnumConstants()) {
-            if (type == org.bukkit.block.BlockFace.class && !Set.of(org.bukkit.block.BlockFace.DOWN,
+            if (constant instanceof org.bukkit.block.BlockFace face && !Set.of(org.bukkit.block.BlockFace.DOWN,
                     org.bukkit.block.BlockFace.UP, org.bukkit.block.BlockFace.NORTH, org.bukkit.block.BlockFace.SOUTH,
-                    org.bukkit.block.BlockFace.WEST, org.bukkit.block.BlockFace.EAST, org.bukkit.block.BlockFace.SELF).contains(constant)) continue;
+                    org.bukkit.block.BlockFace.WEST, org.bukkit.block.BlockFace.EAST, org.bukkit.block.BlockFace.SELF).contains(face)) continue;
             String name;
             if (parser != null) name = parser.toString(constant, 0).replace('_', ' ');
             else {

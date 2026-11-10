@@ -29,11 +29,14 @@ import org.crebs.skpackets.elements.general.effects.EffSendOrReceivePacket;
 import org.crebs.skpackets.elements.general.event.EvtNettyPacket;
 import org.crebs.skpackets.elements.general.event.EvtPacketSendOrReceive;
 import org.crebs.skpackets.elements.general.expressions.ExprSkinFromValue;
+import org.crebs.skpackets.elements.general.expressions.ExprVector2;
 import org.crebs.skpackets.elements.general.expressions.prop.ExprEntityId;
 import org.crebs.skpackets.elements.general.expressions.prop.ExprPacketField;
 import org.crebs.skpackets.elements.general.expressions.prop.ExprPacketPacketType;
 import org.crebs.skpackets.elements.general.expressions.prop.ExprPlayerSkin;
+import org.crebs.skpackets.elements.general.expressions.prop.ExprVector2Coordinate;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
+import org.crebs.skpackets.elements.general.field.PacketValueTypes;
 import org.crebs.skpackets.elements.general.section.SecExprNewPacket;
 import org.skriptlang.skript.addon.SkriptAddon;
 
@@ -49,6 +52,10 @@ public record GeneralModule(Registration registration) implements RegistrationMo
         PacketFieldRegistry.INSTANCE.registerAll();
         register(registration,
                 Types::register,
+                Functions::register,
+                ExprVector2::register,
+                ExprVector2Coordinate::register,
+                PacketValueTypes::register,
                 CondPacketTypeIsBound::register,
                 EffCancelPacket::register,
                 EffFetchSkin::register,

@@ -18,8 +18,13 @@ public final class PacketEventsTestBootstrap {
         PacketEventsSettings settings = new PacketEventsSettings();
         ServerManager server = mock(ServerManager.class);
         when(api.getSettings()).thenReturn(settings);
+        when(api.getLogManager()).thenReturn(mock(com.github.retrooper.packetevents.util.LogManager.class));
         when(api.getServerManager()).thenReturn(server);
         when(server.getVersion()).thenReturn(ServerVersion.V_26_3);
+        var netty = mock(com.github.retrooper.packetevents.netty.NettyManager.class);
+        when(api.getNettyManager()).thenReturn(netty);
+        when(netty.getByteBufOperator()).thenReturn(new io.github.retrooper.packetevents.impl.netty.buffer.ByteBufOperatorImpl());
+        when(netty.getByteBufAllocationOperator()).thenReturn(new io.github.retrooper.packetevents.impl.netty.buffer.ByteBufAllocationOperatorImpl());
         PacketEvents.setAPI(api);
     }
 }

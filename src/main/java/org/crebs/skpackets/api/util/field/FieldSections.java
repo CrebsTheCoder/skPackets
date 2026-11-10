@@ -61,7 +61,10 @@ public final class FieldSections {
             }
             Class<?> expected = field.expectedType();
             Class<?> baseType = expected.isArray() ? expected.getComponentType() : expected;
-            Expression<?> converted = expression.getConvertedExpression(baseType);
+            Expression<?> converted = expected.isArray() && !ch.njol.skript.util.LiteralUtils.hasUnparsedLiteral(expression)
+                    && (expression.getReturnType() == Object.class
+                    || expected.isAssignableFrom(expression.getReturnType()))
+                    ? expression : expression.getConvertedExpression(baseType);
             if (converted == null) {
                 Skript.error("The value for '" + field.name() + "' must be of type "
                         + expected.getSimpleName() + ".");
@@ -91,7 +94,21 @@ public final class FieldSections {
             Object value;
             if (field.expectedType().isArray() || !expression.isSingle()) {
                 Object[] array = expression.getArray(event);
-                value = array.length == 0 ? null : array;
+                if (field.expectedType().isArray()) {
+                    Object input = array.length == 1 && array[0] != null && array[0].getClass().isArray()
+                            ? array[0] : array;
+                    int length = java.lang.reflect.Array.getLength(input);
+                    Object typed = java.lang.reflect.Array.newInstance(field.expectedType().getComponentType(), length);
+                    for (int i = 0; i < length; i++) {
+                        Object element = java.lang.reflect.Array.get(input, i);
+                        Class<?> component = field.expectedType().getComponentType();
+                        if (element != null && !component.isInstance(element))
+                            element = org.skriptlang.skript.lang.converter.Converters.convert(element, component);
+                        if (element == null) throw new IllegalArgumentException("Invalid element for packet field '" + field.name() + "'.");
+                        java.lang.reflect.Array.set(typed, i, element);
+                    }
+                    value = typed;
+                } else value = array;
             } else {
                 value = expression.getSingle(event);
             }

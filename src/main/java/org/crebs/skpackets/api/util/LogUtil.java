@@ -42,6 +42,10 @@ public class LogUtil {
         sender.sendMessage(PREFIX.appendSpace().append(Component.text(log)));
     }
 
+    public static void sendMessage(CommandSender sender, Component message) {
+        sender.sendMessage(PREFIX.appendSpace().append(message));
+    }
+
     public static void info(String format, Object... objects) {
         String log = String.format(format, objects);
         Bukkit.getConsoleSender().sendMessage(PREFIX.appendSpace().append(Component.text(log)));

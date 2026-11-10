@@ -32,6 +32,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.26.1")
     testImplementation("org.mockito:mockito-core:5.15.2")
+    testImplementation("io.netty:netty-buffer:4.2.16.Final")
+    testRuntimeOnly("org.apache.commons:commons-lang3:3.20.0")
     testImplementation("net.bytebuddy:byte-buddy:1.18.12")
     testRuntimeOnly("net.bytebuddy:byte-buddy-agent:1.18.12")
     mockitoAgent("org.mockito:mockito-core:5.15.2") {

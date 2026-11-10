@@ -43,6 +43,7 @@ public final class SkPackets extends JavaPlugin {
 
     private ElementRuntime elementRuntime;
     private Registration registration;
+    private org.crebs.skpackets.api.update.UpdateChecker updateChecker;
 
     public static SkPackets getInstance() {
         if (instance == null) {
@@ -90,10 +91,17 @@ public final class SkPackets extends JavaPlugin {
                 new TeamModule(registration));
         registration.finalizeRegistration();
         ElementCounts.log(registration, getServer().getConsoleSender());
+        saveDefaultConfig();
+        updateChecker = new org.crebs.skpackets.api.update.UpdateChecker(this);
+        updateChecker.start();
     }
 
     @Override
     public void onDisable() {
+        if (updateChecker != null) {
+            updateChecker.close();
+            updateChecker = null;
+        }
         if (skinRefresh != null) {
             skinRefresh.close();
             skinRefresh = null;

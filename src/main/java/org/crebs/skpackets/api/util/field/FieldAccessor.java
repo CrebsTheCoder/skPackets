@@ -30,8 +30,18 @@ public record FieldAccessor<O, T>(
         String[] aliases,
         Class<T> expectedType,
         boolean isOptional,
-        Function<O, T> getter,
-        @Nullable BiConsumer<O, T> setter) {
+        @Nullable Function<O, T> getter,
+        @Nullable BiConsumer<O, T> setter,
+        java.lang.reflect.Type nativeType) {
+
+    public FieldAccessor(String name, String[] aliases, Class<T> expectedType, boolean isOptional,
+                         @Nullable Function<O, T> getter, @Nullable BiConsumer<O, T> setter) {
+        this(name, aliases, expectedType, isOptional, getter, setter, expectedType);
+    }
+
+    public FieldAccessor<O, T> withNativeType(java.lang.reflect.Type type) {
+        return new FieldAccessor<>(name, aliases, expectedType, isOptional, getter, setter, type);
+    }
 
     public boolean matches(String input) {
         if (name.equalsIgnoreCase(input)) {

@@ -1,0 +1,5 @@
+# Check the latest release.
+update-checker: #Only checks when server starts
+  enabled: true
+  # Notify players with skpackets.update.check
+  notify-on-join: true

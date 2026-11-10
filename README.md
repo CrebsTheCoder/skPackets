@@ -150,11 +150,11 @@ command /change-camera:
             send "Look at a nearby mob first." to player
             stop
         set {_camera} to a new clientbound camera packet:
-            entity id: protocol id of {_target}
+            camera id: protocol id of {_target}
         send packet {_camera} to player
         wait 5 seconds
         set {_reset} to a new clientbound camera packet:
-            entity id: protocol id of player
+            camera id: protocol id of player
         send packet {_reset} to player
 ```
 

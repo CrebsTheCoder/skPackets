@@ -34,6 +34,12 @@ public final class FieldValues {
 
     public static <T> Object @Nullable [] read(T[] source,
             Function<T, @Nullable FieldAccessor<T, ?>> resolver, Class<?> returnType) {
+        return read(source, resolver, returnType, true);
+    }
+
+    public static <T> Object @Nullable [] read(T[] source,
+            Function<T, @Nullable FieldAccessor<T, ?>> resolver, Class<?> returnType,
+            boolean flattenArrays) {
         List<Object> elements = new ArrayList<>();
 
         for (T entity : source) {
@@ -42,7 +48,7 @@ public final class FieldValues {
             }
 
             FieldAccessor<T, ?> accessor = resolver.apply(entity);
-            if (accessor == null) {
+            if (accessor == null || accessor.getter() == null) {
                 continue;
             }
 
@@ -51,13 +57,18 @@ public final class FieldValues {
                 continue;
             }
 
-            if (value.getClass().isArray()) {
+            if (flattenArrays && value.getClass().isArray()) {
                 int len = Array.getLength(value);
                 int i = 0;
                 while (i < len) {
                     elements.add(Array.get(value, i++));
                 }
             } else {
+                if (value.getClass().isArray() && accessor.expectedType().isArray() && !accessor.expectedType().isInstance(value)) {
+                    Object typed = Array.newInstance(accessor.expectedType().getComponentType(), Array.getLength(value));
+                    for (int i = 0; i < Array.getLength(value); i++) Array.set(typed, i, Array.get(value, i));
+                    value = typed;
+                }
                 elements.add(value);
             }
         }
@@ -70,9 +81,15 @@ public final class FieldValues {
         return elements.toArray((Object[]) Array.newInstance(wrappedType, 0));
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> void set(T[] source,
             Function<T, @Nullable FieldAccessor<T, ?>> resolver, Object[] delta, String kind) {
+        set(source, resolver, delta, kind, Skript::error);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> void set(T[] source,
+            Function<T, @Nullable FieldAccessor<T, ?>> resolver, Object[] delta, String kind,
+            java.util.function.Consumer<String> reportError) {
         for (T entity : source) {
             if (entity == null) {
                 continue;
@@ -89,9 +106,12 @@ public final class FieldValues {
 
                 if (expected.isArray()) {
                     Class<?> componentType = expected.getComponentType();
-                    Object typedArray = Array.newInstance(componentType, delta.length);
-                    for (int i = 0; i < delta.length; i++) {
-                        Array.set(typedArray, i, delta[i]);
+                    Object input = delta.length == 1 && delta[0] != null && delta[0].getClass().isArray()
+                            ? delta[0] : delta;
+                    int length = Array.getLength(input);
+                    Object typedArray = Array.newInstance(componentType, length);
+                    for (int i = 0; i < length; i++) {
+                        Array.set(typedArray, i, Array.get(input, i));
                     }
                     newValue = typedArray;
                 } else {
@@ -105,7 +125,7 @@ public final class FieldValues {
                 boolean isCompatible = expected == Object.class || expected.isInstance(newValue);
 
                 if (!isCompatible) {
-                    Skript.warning(
+                    reportError.accept(
                             "Cannot set the " + kind + " field '"
                                     + accessor.name()
                                     + "' to a value of type "
@@ -117,7 +137,7 @@ public final class FieldValues {
 
                 ((BiConsumer<T, Object>) accessor.setter()).accept(entity, newValue);
             } catch (IllegalArgumentException exception) {
-                Skript.error(exception.getMessage());
+                reportError.accept(exception.getMessage());
             }
         }
     }

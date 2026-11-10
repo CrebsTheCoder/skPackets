@@ -38,12 +38,12 @@ public class PacketFieldRegistry extends BaseFieldRegistry<PacketTypeCommon, Pac
     private PacketFieldRegistry() {
         this.registrars = new ArrayList<>();
 
-        this.registrars.addAll(
-                List.of(
-                        new ClientBoundPacketFieldRegistrar(),
-                        new ServerBoundPacketFieldRegistrar(),
-                        new org.crebs.skpackets.elements.team.TeamPacketFields()));
+        this.registrars.add(new org.crebs.skpackets.elements.team.TeamPacketFields());
+        registerNbt();
+        this.registrars.add(new PacketFieldRegistrar());
+    }
 
+    private void registerNbt() {
         if (!org.bukkit.Bukkit.getPluginManager().isPluginEnabled("SkBee")) {
             return;
         }
@@ -51,7 +51,7 @@ public class PacketFieldRegistry extends BaseFieldRegistry<PacketTypeCommon, Pac
             Class<?> nbtApiClass = Class.forName("com.shanebeestudios.skbee.api.nbt.NBTApi");
             boolean enabled = (boolean) nbtApiClass.getMethod("isEnabled").invoke(null);
             if (enabled) {
-                this.registrars.add(new SkBeePacketFieldRegistrar());
+                this.registrars.add(new NbtPacketFieldRegistrar());
                 LogUtil.info("Hooked into SkBee NBT using NBT-API");
             }
         } catch (ClassNotFoundException ignored) {

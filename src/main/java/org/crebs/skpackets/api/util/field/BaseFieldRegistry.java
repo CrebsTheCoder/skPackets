@@ -93,6 +93,12 @@ public abstract class BaseFieldRegistry<K, BaseType> {
             return this;
         }
 
+        public Builder<T> nativeType(java.lang.reflect.Type nativeType) {
+            int last = accessors.size() - 1;
+            accessors.set(last, accessors.get(last).withNativeType(nativeType));
+            return this;
+        }
+
         public Builder<T> constructor(
                 @Nullable Function<ConstructionContext<K, T>, T> constructor) {
             this.constructor = constructor;

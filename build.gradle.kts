@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.crebs"
-version = "1.0.1"
+version = "1.0.2"
 
 val mockitoAgent by configurations.creating
 
@@ -27,11 +27,14 @@ repositories {
 }
 
 dependencies {
+    implementation("org.bstats:bstats-bukkit:3.2.1")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.26.1")
     testImplementation("org.mockito:mockito-core:5.15.2")
+    testImplementation("io.netty:netty-buffer:4.2.16.Final")
+    testRuntimeOnly("org.apache.commons:commons-lang3:3.20.0")
     testImplementation("net.bytebuddy:byte-buddy:1.18.12")
     testRuntimeOnly("net.bytebuddy:byte-buddy-agent:1.18.12")
     mockitoAgent("org.mockito:mockito-core:5.15.2") {
@@ -74,6 +77,7 @@ tasks.processResources {
 
 tasks.shadowJar {
     archiveClassifier.set("")
+    relocate("org.bstats", "org.crebs.skpackets.libs.bstats")
     relocate("me.tofaa.entitylib", "org.crebs.skpackets.libs.entitylib")
     relocate("com.github.shanebeee.skr", "org.crebs.skpackets.libs.skr")
     mergeServiceFiles()

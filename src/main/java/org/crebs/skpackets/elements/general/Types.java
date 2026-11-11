@@ -37,6 +37,7 @@ import com.github.shanebeee.skr.skript.EnumWrapper;
 
 import org.bukkit.block.sign.Side;
 import org.crebs.skpackets.api.entity.Skin;
+import org.crebs.skpackets.api.general.Vector2;
 import org.crebs.skpackets.api.general.packet.PacketTypeRegistry;
 import org.crebs.skpackets.api.util.DebugUtil;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +50,20 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class Types {
+
+    public static final class Vector2Serializer extends Serializer<Vector2> {
+        @Override public Fields serialize(Vector2 value) {
+            Fields fields = new Fields();
+            fields.putPrimitive("x", value.x()); fields.putPrimitive("y", value.y());
+            return fields;
+        }
+        @Override public Vector2 deserialize(Fields fields) throws StreamCorruptedException {
+            try { return new Vector2(fields.getPrimitive("x", double.class), fields.getPrimitive("y", double.class)); }
+            catch (IllegalArgumentException ex) { throw new StreamCorruptedException(ex.getMessage()); }
+        }
+        @Override public boolean mustSyncDeserialization() { return false; }
+        @Override protected boolean canBeInstantiated() { return false; }
+    }
 
     public static class PacketTypeParser extends Parser<PacketTypeCommon> {
         @Override
@@ -90,6 +105,20 @@ public class Types {
 
     @SuppressWarnings("UnstableApiUsage")
     public static void register(Registration reg) {
+        reg.newType(Vector2.class, "vector2")
+                .user("vector ?2s?").name("General - Vector2")
+                .description("Immutable two-dimensional coordinates, saved in persistent variables. For packet X/Z pairs, the second coordinate is Z.")
+                .since("1.0.1")
+                .parser(new Parser<>() {
+                    @Override public boolean canParse(ParseContext context) { return false; }
+                    @Override public String toString(Vector2 value, int flags) { return value.toString(); }
+                    @Override public String toVariableNameString(Vector2 value) {
+                        return "vector2:" + Double.toHexString(value.x()) + ":" + Double.toHexString(value.y());
+                    }
+                })
+                .serializer(new Vector2Serializer()).register();
+
+
         reg.newType(PacketWrapper.class, "packet")
                 .user("packet")
                 .name("General - Packet")
@@ -248,7 +277,7 @@ public class Types {
                         """
                         on serverbound interact entity packet:
                             set {_hand} to packet field hand of event-packet
-                            if {_hand} is "main hand" parsed as interaction hand:
+                            if {_hand} is main hand:
                                 send "You interacted using your main hand." to player
                         """)
                 .since("1.0.0")

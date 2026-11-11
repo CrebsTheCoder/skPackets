@@ -150,11 +150,11 @@ command /change-camera:
             send "Look at a nearby mob first." to player
             stop
         set {_camera} to a new clientbound camera packet:
-            entity id: protocol id of {_target}
+            camera id: protocol id of {_target}
         send packet {_camera} to player
         wait 5 seconds
         set {_reset} to a new clientbound camera packet:
-            entity id: protocol id of player
+            camera id: protocol id of player
         send packet {_reset} to player
 ```
 
@@ -249,6 +249,8 @@ command /fake-dropped-item:
 
 The persistent fake entity can be restored after supported updates and reconnects while it is still active. This example removes it after 20 seconds.
 
+Standalone fake entities are displayed only in chunks already sent to their viewers. They reappear when those chunks return, following each player's effective view distance. Mounted entity chains keep their existing visibility behavior because a rider's stored spawn location may differ from its vehicle's location.
+
 ### Fake Blocks
 
 Right-click a block to make it appear as gold for five seconds. Only you see the change; the real block is untouched.
@@ -272,6 +274,8 @@ on right click:
 </details>
 
 Persistent block overrides can survive block updates and reconnects during the current server session, until they are reset or cleared.
+
+Block updates are grouped by chunk section. Persistent blocks outside a viewer's sent chunks stay stored and are reapplied when the chunk arrives; temporary changes are sent only if the chunk is already visible. Re-display work is combined and spread across ticks during chunk-loading bursts, without loading distant world chunks.
 
 ### Inventory Navigation
 
@@ -361,8 +365,7 @@ Persistence is opt-in. Add `with persistent` to a supported syntax to reapply a 
 Reapplying an inventory or equipment override **without** `with persistent` replaces the persistent override with a one-time appearance.
 
 > [!NOTE]
-> Persistence is not permanent storage. Overrides are not saved across server restarts.
-
+> Persistence is not permanent storage. They will disappear after a server restart.
 ## Player Inventory Slots
 
 The fake inventory slot syntax uses **raw slot indices**.

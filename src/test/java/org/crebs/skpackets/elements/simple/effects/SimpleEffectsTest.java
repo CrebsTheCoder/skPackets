@@ -81,8 +81,7 @@ class SimpleEffectsTest {
             effect.execute(null);
 
             for (Player viewer : new Player[]{player1, player2}) {
-                verify(manager).show(viewer, a, data, persistent);
-                verify(manager).show(viewer, b, data, persistent);
+                verify(manager).show(viewer, List.of(a, b), data, persistent);
             }
 
             verifyNoMoreInteractions(manager);
@@ -101,7 +100,7 @@ class SimpleEffectsTest {
             EffFakeBlock reset = new EffFakeBlock();
             init(reset, 1, false, values(location), values(player));
             reset.execute(null);
-            verify(manager).reset(player, location);
+            verify(manager).reset(player, List.of(location));
             EffFakeBlock clear = new EffFakeBlock();
             init(clear, 2, false, values(player));
             clear.execute(null);

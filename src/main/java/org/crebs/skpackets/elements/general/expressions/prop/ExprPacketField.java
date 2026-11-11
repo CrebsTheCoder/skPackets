@@ -51,7 +51,7 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
     public static void register(Registration reg) {
         String description = "Gets or sets a field's value from a packet by its name.\n\n"
                 + FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
-                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " "));
+                type -> new org.crebs.skpackets.elements.general.Types.PacketTypeParser().toString(type, 0));
 
         reg.newPropertyExpression(
                         ExprPacketField.class,
@@ -63,10 +63,10 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
                 .examples(
                         """
                         on clientbound entity metadata:
-                            set {_meta} to packet meta of event-packet
+                            set {_meta} to packet field entity metadata of event-packet
                             set meta glowing state of {_meta} to true
 
-                            set packet meta of event-packet to {_meta}
+                            set packet field entity metadata of event-packet to {_meta}
                         """)
                 .since("1.0.0")
                 .register();
@@ -75,12 +75,20 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
     private String fieldName;
     private List<FieldAccessor<PacketWrapper<?>, ?>> accessors = List.of();
     private Class<?> returnType = Object.class;
+    private boolean mixedShapes;
 
     @SuppressWarnings("unchecked")
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         fieldName = parseResult.regexes.getFirst().group().trim();
-        accessors = PacketFieldRegistry.INSTANCE.getAllSchemas().stream()
+        var schemas = PacketFieldRegistry.INSTANCE.getAllSchemas().stream();
+        if (exprs[0].getSource() instanceof ch.njol.skript.expressions.base.EventValueExpression<?>
+                && getParser().isCurrentEvent(PacketSendOrReceiveEvent.class)) {
+            var data = getParser().getData(PacketSendOrReceiveParserData.class);
+            if (data != null && data.getPacketType() != null)
+                schemas = schemas.filter(schema -> schema.type() == data.getPacketType());
+        }
+        accessors = schemas
                 .<FieldAccessor<PacketWrapper<?>, ?>>map(schema -> schema.getAccessor(fieldName))
                 .filter(Objects::nonNull)
                 .toList();
@@ -95,6 +103,10 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
                 returnType = returnType.isInterface() ? Object.class : returnType.getSuperclass();
             }
         }
+        boolean hasArrays = accessors.stream().anyMatch(a -> a.expectedType().isArray());
+        boolean hasScalars = accessors.stream().anyMatch(a -> !a.expectedType().isArray());
+        mixedShapes = hasArrays && hasScalars;
+        if (mixedShapes) returnType = Object.class;
         setExpr((Expression<? extends PacketWrapper>) exprs[0]);
         return true;
     }
@@ -117,7 +129,7 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
 
     @Override
     protected Object[] get(Event event, PacketWrapper[] source) {
-        return FieldValues.read(source, this::resolveAccessor, getReturnType());
+        return FieldValues.read(source, this::resolveAccessor, getReturnType(), !mixedShapes);
     }
 
     @Override
@@ -142,11 +154,11 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
                 return null;
             }
         }
-        return accessors.stream()
+        var types = accessors.stream()
                 .filter(accessor -> accessor.setter() != null)
-                .map(ExprPacketField::valueType)
-                .distinct()
-                .toArray(Class<?>[]::new);
+                .map(accessor -> accessor.expectedType().isArray() ? accessor.expectedType() : valueType(accessor));
+        if (mixedShapes) types = java.util.stream.Stream.concat(types, java.util.stream.Stream.of(Object.class));
+        return types.distinct().toArray(Class<?>[]::new);
     }
 
     @Override
@@ -154,12 +166,12 @@ public class ExprPacketField extends PropertyExpression<PacketWrapper, Object> {
         if (mode != Changer.ChangeMode.SET || delta == null || delta.length == 0) {
             return;
         }
-        FieldValues.set(getExpr().getArray(event), this::resolveAccessor, delta, "packet");
+        FieldValues.set(getExpr().getArray(event), this::resolveAccessor, delta, "packet", this::error);
     }
 
     @Override
     public boolean isSingle() {
-        return getExpr().isSingle() && accessors.stream().noneMatch(accessor -> accessor.expectedType().isArray());
+        return getExpr().isSingle() && (mixedShapes || accessors.stream().noneMatch(accessor -> accessor.expectedType().isArray()));
     }
 
     @Override

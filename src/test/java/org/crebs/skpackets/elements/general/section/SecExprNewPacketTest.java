@@ -39,13 +39,12 @@ class SecExprNewPacketTest {
     @Test
     void invalidConstructionProducesErrorAndNoPacket() throws Exception {
         PacketTypeCommon type = mock(PacketTypeCommon.class);
-        SecExprNewPacket expression = expression(type, new FieldSchema<>(type, List.of(), context -> {
+        SecExprNewPacket expression = spy(expression(type, new FieldSchema<>(type, List.of(), context -> {
             throw new IllegalArgumentException("missing entity id");
-        }));
-        try (MockedStatic<Skript> skript = mockStatic(Skript.class, withSettings().mockMaker(INLINE))) {
-            assertArrayEquals(new PacketWrapper<?>[0], expression.get(mock(Event.class)));
-            skript.verify(() -> Skript.error("missing entity id"));
-        }
+        })));
+        doNothing().when(expression).error(anyString());
+        assertArrayEquals(new PacketWrapper<?>[0], expression.get(mock(Event.class)));
+        verify(expression).error("missing entity id");
     }
 
     private SecExprNewPacket expression(PacketTypeCommon type, FieldSchema<PacketTypeCommon, PacketWrapper<?>> schema) throws Exception {

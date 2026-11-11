@@ -22,7 +22,6 @@ package org.crebs.skpackets.api.general.packet;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.*;
-import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
@@ -31,8 +30,6 @@ import org.crebs.skpackets.SkPackets;
 import org.crebs.skpackets.elements.general.event.EvtPacketSendOrReceive.ProcessType;
 import org.jspecify.annotations.NonNull;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,9 +43,6 @@ public class PacketSendOrReceiveListener implements PacketListener {
     private static final Map<PacketListenerPriority, Map<ProcessType, Integer>> GLOBAL_LISTENERS =
             new ConcurrentHashMap<>();
 
-    private static final Map<PacketTypeCommon, Constructor<? extends PacketWrapper<?>>>
-            CONSTRUCTORS = new ConcurrentHashMap<>();
-
     private final PacketListenerPriority priority;
     private static final Map<PacketListenerPriority, PacketListenerCommon> REGISTERED =
             new EnumMap<>(PacketListenerPriority.class);
@@ -58,7 +52,7 @@ public class PacketSendOrReceiveListener implements PacketListener {
         REGISTERED.clear();
         ACTIVE_LISTENERS.clear();
         GLOBAL_LISTENERS.clear();
-        CONSTRUCTORS.clear();
+        PacketAccessManager.clearEventFactories();
     }
 
     private PacketSendOrReceiveListener(PacketListenerPriority priority) {
@@ -178,28 +172,10 @@ public class PacketSendOrReceiveListener implements PacketListener {
     }
 
     private static PacketWrapper<?> getWrapper(PacketTypeCommon type, ProtocolPacketEvent event) {
-        Class<? extends PacketWrapper<?>> clazz = type.getWrapperClass();
-        if (clazz == null) {
-            return null;
-        }
-
         try {
-            Constructor<? extends PacketWrapper<?>> constructor = CONSTRUCTORS.get(type);
-            if (constructor == null) {
-                constructor =
-                        clazz.getConstructor(
-                                type.getSide() == PacketSide.SERVER
-                                        ? PacketSendEvent.class
-                                        : PacketReceiveEvent.class);
-                CONSTRUCTORS.putIfAbsent(type, constructor);
-            }
-            return constructor.newInstance(event);
-        } catch (InvocationTargetException
-                | InstantiationException
-                | IllegalAccessException
-                | NoSuchMethodError
-                | NoSuchMethodException e) {
-            throw new IllegalStateException("Couldn't create packet for: " + type, e);
+            return PacketAccessManager.wrap(type, event);
+        } catch (RuntimeException exception) {
+            throw new IllegalStateException("Couldn't create packet for: " + type, exception);
         }
     }
 

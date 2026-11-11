@@ -20,8 +20,9 @@
  */
 package org.crebs.skpackets.api.util;
 
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +31,21 @@ public class DebugUtil {
 
     private static final int MAX_DEPTH = 5;
     private static final String INDENT_STEP = "  ";
+
+    private static final ClassValue<List<Method>> GETTERS = new ClassValue<>() {
+        @Override protected List<Method> computeValue(Class<?> type) {
+            return Arrays.stream(type.getDeclaredMethods())
+                    .filter(method -> !method.isAnnotationPresent(Deprecated.class))
+                    .filter(method -> method.getParameterCount() == 0)
+                    .filter(method -> method.getName().startsWith("get") || method.getName().startsWith("is"))
+                    .filter(method -> !method.getName().contains("Handle")
+                            && !method.getName().contains("copy")
+                            && !method.getName().contains("toString")
+                            && !method.getName().contains("PacketEventsData"))
+                    .filter(Method::trySetAccessible)
+                    .toList();
+        }
+    };
 
     public static String getDebugString(Object obj) {
         if (obj == null) {
@@ -54,32 +70,8 @@ public class DebugUtil {
         Class<?> currentClass = obj.getClass();
 
         try {
-            for (Method method : currentClass.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(Deprecated.class)) {
-                    continue;
-                }
-
-                String methodName = method.getName();
-
-                boolean isGetter = (methodName.startsWith("get") || methodName.startsWith("is"));
-                boolean noParameters = method.getParameterCount() == 0;
-
-                boolean isInternal =
-                        methodName.contains("Handle")
-                                || methodName.contains("copy")
-                                || methodName.contains("toString")
-                                || methodName.contains("PacketEventsData");
-
-                if (isGetter && noParameters && !isInternal) {
-                    if (!method.trySetAccessible()) {
-                        continue;
-                    }
-
-                    String fieldName = cleanFieldName(methodName);
-                    Object value = method.invoke(obj);
-
-                    processValue(fieldName, value, depth, output);
-                }
+            for (Method method : GETTERS.get(currentClass)) {
+                processValue(cleanFieldName(method.getName()), method.invoke(obj), depth, output);
             }
         } catch (Exception e) {
             output.append(indent)
@@ -128,18 +120,7 @@ public class DebugUtil {
                 }
             }
 
-            boolean isMetadataList =
-                    list.stream()
-                            .anyMatch(
-                                    item ->
-                                            item != null
-                                                    && (item.getClass()
-                                                                    .getName()
-                                                                    .contains("EntityData")
-                                                            || item.getClass()
-                                                                    .getName()
-                                                                    .contains(
-                                                                            "AbstractEntityData")));
+            boolean isMetadataList = list.stream().anyMatch(EntityData.class::isInstance);
 
             if (isMetadataList) {
                 output.append(indent).append(fieldName).append(":\n");
@@ -267,32 +248,24 @@ public class DebugUtil {
             return;
         }
 
-        try {
-            Method getIndex = data.getClass().getMethod("getIndex");
-            Method getType = data.getClass().getMethod("getType");
-            Method getValue = data.getClass().getMethod("getValue");
-
-            Object index = getIndex.invoke(data);
-            Object type = getType.invoke(data);
-            Object value = getValue.invoke(data);
-
-            String typeString = Objects.toString(type);
-            int start = typeString.indexOf('[');
-            int end = typeString.indexOf(']');
-            if (start != -1 && end != -1 && end > start) {
-                typeString = typeString.substring(start + 1, end);
-            }
-
-            builder.append("[")
-                    .append(index)
-                    .append(": ")
-                    .append(typeString.toLowerCase(Locale.ENGLISH))
-                    .append(" = ")
-                    .append(valueToString(value))
-                    .append("]\n");
-
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        if (!(data instanceof EntityData<?> metadata)) {
             builder.append("Unparsable Data: ").append(data).append("\n");
+            return;
         }
+
+        String typeString = Objects.toString(metadata.getType());
+        int start = typeString.indexOf('[');
+        int end = typeString.indexOf(']');
+        if (start != -1 && end != -1 && end > start) {
+            typeString = typeString.substring(start + 1, end);
+        }
+
+        builder.append("[")
+                .append(metadata.getIndex())
+                .append(": ")
+                .append(typeString.toLowerCase(Locale.ENGLISH))
+                .append(" = ")
+                .append(valueToString(metadata.getValue()))
+                .append("]\n");
     }
 }

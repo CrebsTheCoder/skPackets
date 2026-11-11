@@ -31,43 +31,25 @@ import ch.njol.util.Kleenean;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.shanebeee.skr.Registration;
-import com.github.shanebeee.skr.skript.SimpleEntryValidator;
 import org.bukkit.event.Event;
-import org.crebs.skpackets.api.util.field.FieldAccessor;
 import org.crebs.skpackets.api.util.field.FieldSchema;
 import org.crebs.skpackets.api.util.field.FieldSections;
 import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.skriptlang.skript.lang.entry.EntryContainer;
-import org.skriptlang.skript.lang.entry.EntryValidator;
 
 import java.util.*;
 
 public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
 
-    private static final Map<FieldSchema<PacketTypeCommon, PacketWrapper<?>>, EntryValidator>
-            VALIDATORS = new HashMap<>();
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void register(Registration reg) {
-
-        for (FieldSchema<PacketTypeCommon, PacketWrapper<?>> def :
-                PacketFieldRegistry.INSTANCE.getAllSchemas()) {
-            SimpleEntryValidator builder = SimpleEntryValidator.builder();
-            for (FieldAccessor<PacketWrapper<?>, ?> field : def.accessors()) {
-                builder.addOptionalEntry(field.name(), Object.class);
-
-                for (String alias : field.aliases()) {
-                    builder.addOptionalEntry(alias, Object.class);
-                }
-            }
-            VALIDATORS.put(def, builder.build());
-        }
-
-        String description = "Create a new packet from a packet type.\n"
+        String description = "Create a new packet from a packet type. Fields use native Skript values; "
+                + "packet-specific enums use quoted text. Use vec2(x, z) for two-dimensional coordinates. Equipment, player-info entries, profiles and trades support nested sections. Other complex values can be copied from packets using the shared packet value type. Optional fields may be omitted. Types without a public "
+                + "PacketEvents data constructor expose raw data as a list of byte numbers. "
+                + "Sending a packet still requires the matching protocol version and connection state.\n"
                 + FieldSchema.describe(PacketFieldRegistry.INSTANCE.getAllSchemas(),
-                type -> type.getName().toLowerCase(Locale.ENGLISH).replace("_", " "));
+                type -> new org.crebs.skpackets.elements.general.Types.PacketTypeParser().toString(type, 0));
 
         reg.newSimpleExpression(
                         SecExprNewPacket.class,
@@ -155,22 +137,9 @@ public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
             return true;
         }
 
-        EntryValidator validator = VALIDATORS.get(this.schema);
-        if (validator == null) {
-            Skript.error(
-                    "No validator found for "
-                            + this.type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ")
-                            + " packet.");
-            return false;
-        }
-
-        EntryContainer container = validator.validate(sectionNode);
-        if (container == null) {
-            return false;
-        }
-
-        return FieldSections.parse(this.schema.accessors(), container, this.fieldExpressions,
-                this.type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ") + " packet", true, Set.of());
+        return org.crebs.skpackets.elements.general.field.PacketFieldSections.parse(
+                this.schema.accessors(), sectionNode, this.fieldExpressions,
+                this.type.getName().toLowerCase(Locale.ENGLISH).replace("_", " ") + " packet");
     }
 
     @Override
@@ -179,7 +148,7 @@ public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
             PacketWrapper<?> packet = createPacket(event);
             return packet == null ? new PacketWrapper[0] : new PacketWrapper[] {packet};
         } catch (IllegalArgumentException | IllegalStateException ex) {
-            Skript.error(ex.getMessage());
+            error(ex.getMessage());
             return new PacketWrapper[0];
         }
     }

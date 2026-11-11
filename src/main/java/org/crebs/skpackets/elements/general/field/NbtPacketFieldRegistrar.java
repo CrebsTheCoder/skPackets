@@ -30,7 +30,7 @@ import org.crebs.skpackets.api.util.ConversionUtil;
 import org.crebs.skpackets.api.util.SkBeeConversionUtil;
 import org.crebs.skpackets.api.util.field.FieldRegistrar;
 
-public class SkBeePacketFieldRegistrar implements FieldRegistrar {
+public class NbtPacketFieldRegistrar implements FieldRegistrar {
 
     @Override
     public void register() {

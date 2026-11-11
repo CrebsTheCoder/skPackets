@@ -1,6 +1,8 @@
 package org.crebs.skpackets.api.entity;
 
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
+import io.papermc.paper.event.packet.PlayerChunkUnloadEvent;
 import me.tofaa.entitylib.wrapper.WrapperEntity;
 import me.tofaa.entitylib.wrapper.WrapperLivingEntity;
 import org.bukkit.Bukkit;
@@ -21,16 +23,22 @@ import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public final class PacketEntityManager implements Listener, AutoCloseable {
+    private record Chunk(UUID world, int x, int z) {}
     private record Tracked(
-            WrapperEntity entity, UUID world, boolean persistent, Set<UUID> viewers) {}
+            WrapperEntity entity, Chunk chunk, boolean persistent, Set<UUID> viewers) {}
 
     private final Map<Integer, Tracked> entities = new HashMap<>();
+    private final Map<UUID, Set<Integer>> byViewer = new HashMap<>();
+    private final Map<Chunk, Set<Integer>> byChunk = new HashMap<>();
+    private final Map<UUID, WrapperEntity> byUuid = new ConcurrentHashMap<>();
+    private final Set<UUID> pendingRestores = new HashSet<>();
     private final RealEntityPassengerManager realPassengers = new RealEntityPassengerManager();
     private final JavaPlugin plugin;
-    private boolean closed;
+    private volatile boolean closed;
 
     public PacketEntityManager(JavaPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin);
@@ -98,8 +106,11 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
             throw new IllegalArgumentException(
                     "Entity ID is already in use: " + entity.getEntityId());
         }
-        Tracked tracked = new Tracked(entity, location.getWorld().getUID(), persistent, ids);
+        Tracked tracked = new Tracked(entity, chunk(location), persistent, ids);
         entities.put(entity.getEntityId(), tracked);
+        byUuid.put(entity.getUuid(), entity);
+        byChunk.computeIfAbsent(tracked.chunk(), ignored -> new HashSet<>()).add(entity.getEntityId());
+        for (UUID id : ids) indexViewer(id, entity.getEntityId());
         entity.spawn(SpigotConversionUtil.fromBukkitLocation(location));
         for (Player viewer : viewers) {
             show(tracked, viewer);
@@ -118,6 +129,34 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         return entities.values().stream().map(Tracked::entity).toList();
     }
 
+    public Optional<WrapperEntity> getEntity(UUID uuid) {
+        if (closed) throw new IllegalStateException("Packet entity manager is closed");
+        WrapperEntity entity = byUuid.get(uuid);
+        return entity != null && entity.isSpawned() ? Optional.of(entity) : Optional.empty();
+    }
+
+    private static Chunk chunk(Location location) {
+        return new Chunk(location.getWorld().getUID(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+    }
+
+    private void indexViewer(UUID viewer, int id) {
+        byViewer.computeIfAbsent(viewer, ignored -> new HashSet<>()).add(id);
+    }
+
+    private static <K> void unindex(Map<K, Set<Integer>> index, K key, int id) {
+        Set<Integer> ids = index.get(key);
+        if (ids != null && ids.remove(id) && ids.isEmpty()) index.remove(key);
+    }
+
+    private void forget(Tracked tracked) {
+        int id = tracked.entity().getEntityId();
+        entities.remove(id);
+        byUuid.remove(tracked.entity().getUuid(), tracked.entity());
+        unindex(byChunk, tracked.chunk(), id);
+        for (UUID viewer : tracked.viewers()) unindex(byViewer, viewer, id);
+        realPassengers.remove(tracked.entity());
+    }
+
     public Set<UUID> getViewers(WrapperEntity entity) {
         checkThread();
         return Set.copyOf(requireTracked(entity).viewers());
@@ -134,7 +173,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         if (!player.isOnline()) {
             throw new IllegalArgumentException("Viewer must be online");
         }
-        tracked.viewers().add(player.getUniqueId());
+        if (tracked.viewers().add(player.getUniqueId())) indexViewer(player.getUniqueId(), entity.getEntityId());
         show(tracked, player);
     }
 
@@ -142,8 +181,23 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         checkThread();
         Tracked tracked = requireTracked(entity);
         tracked.viewers().remove(viewer);
+        unindex(byViewer, viewer, entity.getEntityId());
         realPassengers.removeViewer(entity, viewer);
         entity.removeViewer(viewer);
+    }
+
+    public void setViewers(WrapperEntity entity, Collection<? extends Player> viewers) {
+        checkThread();
+        Tracked tracked = requireTracked(entity);
+        Map<UUID, Player> desired = new HashMap<>();
+        for (Player player : viewers) {
+            if (!player.isOnline()) throw new IllegalArgumentException("Viewer must be online");
+            desired.put(player.getUniqueId(), player);
+        }
+        for (UUID id : Set.copyOf(tracked.viewers()))
+            if (!desired.containsKey(id)) removeViewer(entity, id);
+        for (var entry : desired.entrySet())
+            if (!tracked.viewers().contains(entry.getKey())) addViewer(entity, entry.getValue());
     }
 
     public void updateRealPassengers(Entity vehicle, Collection<WrapperEntity> passengers, boolean mount) {
@@ -169,24 +223,33 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         }
         location.checkFinite();
         UUID world = location.getWorld().getUID();
-        boolean changedWorld = !tracked.world().equals(world);
+        Chunk destination = chunk(location);
+        boolean changedWorld = !tracked.chunk().world().equals(world);
         if (changedWorld) {
             realPassengers.remove(entity);
             for (UUID viewer : Set.copyOf(entity.getViewers())) {
                 entity.removeViewer(viewer);
             }
         }
-        entity.setWorld(location.getWorld().getName());
-        entity.teleport(SpigotConversionUtil.fromBukkitLocation(location));
-        if (changedWorld) {
-            Tracked updated = new Tracked(entity, world, tracked.persistent(), tracked.viewers());
-            entities.put(entity.getEntityId(), updated);
-            for (UUID id : updated.viewers()) {
+        boolean changedChunk = !tracked.chunk().equals(destination);
+        if (changedChunk) {
+            unindex(byChunk, tracked.chunk(), entity.getEntityId());
+            tracked = new Tracked(entity, destination, tracked.persistent(), tracked.viewers());
+            entities.put(entity.getEntityId(), tracked);
+            byChunk.computeIfAbsent(destination, ignored -> new HashSet<>()).add(entity.getEntityId());
+            for (UUID id : Set.copyOf(entity.getViewers())) {
                 Player player = Bukkit.getPlayer(id);
-                if (player != null) {
-                    show(updated, player);
+                if (player == null || !visible(tracked, player)) {
+                    realPassengers.removeViewer(entity, id);
+                    entity.removeViewer(id);
                 }
             }
+        }
+        entity.setWorld(location.getWorld().getName());
+        entity.teleport(SpigotConversionUtil.fromBukkitLocation(location));
+        if (changedChunk) for (UUID id : tracked.viewers()) {
+            Player player = Bukkit.getPlayer(id);
+            if (player != null) show(tracked, player);
         }
     }
 
@@ -195,9 +258,7 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         if (!entities.containsKey(entity.getEntityId())) {
             return;
         }
-        requireTracked(entity);
-        entities.remove(entity.getEntityId());
-        realPassengers.remove(entity);
+        forget(requireTracked(entity));
         entity.remove();
     }
 
@@ -212,35 +273,75 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
     private void show(Tracked tracked, Player player) {
         if (player.isOnline()
                 && tracked.viewers().contains(player.getUniqueId())
-                && tracked.world().equals(player.getWorld().getUID())
+                && visible(tracked, player)
                 && tracked.entity().isSpawned()) {
             tracked.entity().addViewer(player.getUniqueId());
         }
     }
 
+    private boolean visible(Tracked tracked, Player player) {
+        Chunk chunk = tracked.chunk();
+        return chunk.world().equals(player.getWorld().getUID())
+                && (hasMount(tracked.entity())
+                    || player.isChunkSent((chunk.x() & 0xffffffffL) | ((long) chunk.z() << 32)));
+    }
+
+    private boolean hasMount(WrapperEntity entity) {
+        return entity.getRiding() != null || !entity.getPassengers().isEmpty() || realPassengers.isMounted(entity);
+    }
+
     private void restore(Player player) {
+        UUID id = player.getUniqueId();
+        if (!pendingRestores.add(id)) return;
         Bukkit.getScheduler()
                 .runTask(
                         plugin,
                         () -> {
+                            pendingRestores.remove(id);
                             if (closed || !player.isOnline()) {
                                 return;
                             }
-                            entities.values().removeIf(tracked -> {
-                                if (tracked.entity().isSpawned()) return false;
-                                realPassengers.remove(tracked.entity());
-                                return true;
-                            });
-                            for (Tracked tracked : entities.values()) {
-                                show(tracked, player);
+                            for (int entityId : Set.copyOf(byViewer.getOrDefault(id, Set.of()))) {
+                                Tracked tracked = entities.get(entityId);
+                                if (tracked == null) continue;
+                                if (!tracked.entity().isSpawned()) forget(tracked);
+                                else show(tracked, player);
                             }
                         });
     }
 
     private void hide(Player player) {
         realPassengers.forgetViewer(player.getUniqueId());
-        for (Tracked tracked : entities.values()) {
-            tracked.entity().removeViewer(player.getUniqueId());
+        for (int id : Set.copyOf(byViewer.getOrDefault(player.getUniqueId(), Set.of()))) {
+            Tracked tracked = entities.get(id);
+            if (tracked != null) tracked.entity().removeViewer(player.getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onChunkLoad(PlayerChunkLoadEvent event) {
+        if (closed) return;
+        Chunk chunk = new Chunk(event.getWorld().getUID(), event.getChunk().getX(), event.getChunk().getZ());
+        UUID viewer = event.getPlayer().getUniqueId();
+        for (int id : Set.copyOf(byChunk.getOrDefault(chunk, Set.of()))) {
+            Tracked tracked = entities.get(id);
+            if (tracked == null || !tracked.viewers().contains(viewer)) continue;
+            if (!tracked.entity().isSpawned()) forget(tracked);
+            else tracked.entity().addViewer(viewer);
+        }
+    }
+
+    @EventHandler
+    public void onChunkUnload(PlayerChunkUnloadEvent event) {
+        if (closed) return;
+        Chunk chunk = new Chunk(event.getWorld().getUID(), event.getChunk().getX(), event.getChunk().getZ());
+        UUID viewer = event.getPlayer().getUniqueId();
+        for (int id : Set.copyOf(byChunk.getOrDefault(chunk, Set.of()))) {
+            Tracked tracked = entities.get(id);
+            if (tracked == null || !tracked.viewers().contains(viewer)) continue;
+            if (hasMount(tracked.entity())) continue;
+            realPassengers.removeViewer(tracked.entity(), viewer);
+            tracked.entity().removeViewer(viewer);
         }
     }
 
@@ -254,15 +355,17 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
         UUID id = event.getPlayer().getUniqueId();
         realPassengers.forgetViewer(id);
         realPassengers.forgetVehicle(event.getPlayer());
-        for (var iterator = entities.values().iterator(); iterator.hasNext(); ) {
-            Tracked tracked = iterator.next();
+        for (int entityId : Set.copyOf(byViewer.getOrDefault(id, Set.of()))) {
+            Tracked tracked = entities.get(entityId);
+            if (tracked == null) continue;
             tracked.entity().handleViewerDisconnect(id);
-            if (!tracked.persistent()
-                    && tracked.viewers().remove(id)
-                    && tracked.viewers().isEmpty()) {
-                iterator.remove();
-                realPassengers.remove(tracked.entity());
-                tracked.entity().remove();
+            if (!tracked.persistent()) {
+                tracked.viewers().remove(id);
+                unindex(byViewer, id, entityId);
+                if (tracked.viewers().isEmpty()) {
+                    forget(tracked);
+                    tracked.entity().remove();
+                }
             }
         }
     }
@@ -313,6 +416,10 @@ public final class PacketEntityManager implements Listener, AutoCloseable {
             tracked.entity().remove();
         }
         entities.clear();
+        byViewer.clear();
+        byChunk.clear();
+        byUuid.clear();
+        pendingRestores.clear();
         closed = true;
         HandlerList.unregisterAll(this);
     }

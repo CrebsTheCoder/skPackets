@@ -21,6 +21,7 @@ import org.crebs.skpackets.elements.entity.field.meta.MetaFieldRegistry;
 import org.crebs.skpackets.elements.simple.SimpleModule;
 import org.crebs.skpackets.elements.team.TeamModule;
 import org.crebs.skpackets.support.PacketEventsTestBootstrap;
+import org.crebs.skpackets.support.SkriptRegistrationTestSupport;
 import org.junit.jupiter.api.Test;
 import org.skriptlang.skript.bukkit.lang.eventvalue.EventValueRegistry;
 import org.skriptlang.skript.lang.comparator.Comparators;
@@ -37,8 +38,7 @@ class AddonRegistrationTest {
     @Test
     void registersAllModulesWithoutDuplicateTypes() throws Exception {
         PacketEventsTestBootstrap.initialize();
-        // Skript requires the host name to differ from the addon name.
-        Skript skript = Skript.of(AddonRegistrationTest.class, "skPackets-test");
+        Skript skript = Skript.of(AddonRegistrationTest.class, "skPackets-test"); // name can't be the same as addon name
         skript.storeRegistry(EventValueRegistry.class, EventValueRegistry.empty(skript));
         try (var snapshots = new RegistrySnapshots(
                 Classes.class, Comparators.class, Converters.class,
@@ -46,6 +46,7 @@ class AddonRegistrationTest {
              var skriptPlugin = mockStatic(ch.njol.skript.Skript.class);
              var bukkit = mockStatic(Bukkit.class)) {
             skriptPlugin.when(ch.njol.skript.Skript::instance).thenReturn(skript);
+            skriptPlugin.when(ch.njol.skript.Skript::getVersion).thenReturn(new ch.njol.skript.util.Version("2.17.1"));
             bukkit.when(Bukkit::getPluginManager).thenReturn(mock(PluginManager.class));
             var server = mock(Server.class, RETURNS_DEEP_STUBS);
             when(server.getServerConfig().isProxyOnlineMode()).thenReturn(true);
@@ -57,33 +58,35 @@ class AddonRegistrationTest {
             packetSchemas.clear();
             snapshots.captureRegistry(FakeEntityFieldRegistry.INSTANCE);
             snapshots.captureRegistry(MetaFieldRegistry.INSTANCE);
-            Registration registration = new Registration("skPackets", true);
-            registration.getAddon().loadModules(
-                    new GeneralModule(registration),
-                    new SimpleModule(registration),
-                    new EntityModule(registration),
-                    new TeamModule(registration));
-            Field infoField = Registration.TypeRegistrar.class.getDeclaredField("classInfo");
-            infoField.setAccessible(true);
-            List<ClassInfo<?>> infos = new ArrayList<>();
-            Set<Class<?>> classes = new HashSet<>();
-            Set<String> codes = new HashSet<>();
-            for (var queued : registration.getTypes()) {
-                ClassInfo<?> info = (ClassInfo<?>) infoField.get(queued);
-                assertTrue(classes.add(info.getC()), () -> "Duplicate queued class: " + info.getC());
-                assertTrue(codes.add(info.getCodeName()), () -> "Duplicate queued codename: " + info.getCodeName());
-                infos.add(info);
+            try (var functions = SkriptRegistrationTestSupport.initialize()) {
+                Registration registration = new Registration("skPackets", true);
+                registration.getAddon().loadModules(
+                        new GeneralModule(registration),
+                        new SimpleModule(registration),
+                        new EntityModule(registration),
+                        new TeamModule(registration));
+                Field infoField = Registration.TypeRegistrar.class.getDeclaredField("classInfo");
+                infoField.setAccessible(true);
+                List<ClassInfo<?>> infos = new ArrayList<>();
+                Set<Class<?>> classes = new HashSet<>();
+                Set<String> codes = new HashSet<>();
+                for (var queued : registration.getTypes()) {
+                    ClassInfo<?> info = (ClassInfo<?>) infoField.get(queued);
+                    assertTrue(classes.add(info.getC()), () -> "Duplicate queued class: " + info.getC());
+                    assertTrue(codes.add(info.getCodeName()), () -> "Duplicate queued codename: " + info.getCodeName());
+                    infos.add(info);
+                }
+                assertFalse(infos.isEmpty());
+                assertDoesNotThrow(registration::finalizeRegistration);
+                for (ClassInfo<?> info : infos) {
+                    assertSame(info, Classes.getExactClassInfo(info.getC()));
+                    assertSame(info, Classes.getClassInfoNoError(info.getCodeName()));
+                }
+                assertNotNull(Classes.getExactClassInfo(PacketTypeCommon.class));
+                assertNotNull(Classes.getExactClassInfo(EntityMeta.class));
+                assertFalse(registration.getEffects().isEmpty());
+                assertFalse(registration.getExpressions().isEmpty());
             }
-            assertFalse(infos.isEmpty());
-            assertDoesNotThrow(registration::finalizeRegistration);
-            for (ClassInfo<?> info : infos) {
-                assertSame(info, Classes.getExactClassInfo(info.getC()));
-                assertSame(info, Classes.getClassInfoNoError(info.getCodeName()));
-            }
-            assertNotNull(Classes.getExactClassInfo(PacketTypeCommon.class));
-            assertNotNull(Classes.getExactClassInfo(EntityMeta.class));
-            assertFalse(registration.getEffects().isEmpty());
-            assertFalse(registration.getExpressions().isEmpty());
         }
     }
 

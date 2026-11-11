@@ -150,9 +150,6 @@ public class FakeBaseEntityFieldRegistrar implements FieldRegistrar {
 
     private static void setViewers(WrapperEntity w, Player[] viewers) {
         var manager = org.crebs.skpackets.SkPackets.getInstance().getPacketEntities();
-        manager.getViewers(w).forEach(id -> manager.removeViewer(w, id));
-        for (Player newViewer : viewers) {
-            manager.addViewer(w, newViewer);
-        }
+        manager.setViewers(w, java.util.Arrays.asList(viewers));
     }
 }

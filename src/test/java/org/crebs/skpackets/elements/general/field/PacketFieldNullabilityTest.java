@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
-class ServerBoundPacketFieldRegistrarTest {
+class PacketFieldNullabilityTest {
     @BeforeAll
     static void registerFields() {
         PacketEventsTestBootstrap.initialize();
@@ -37,7 +37,7 @@ class ServerBoundPacketFieldRegistrarTest {
     )
     void sneakingSetterHandlesNullableBoolean(Boolean value, boolean expected) {
         FieldSchema<PacketTypeCommon, PacketWrapper<?>> schema = PacketFieldRegistry.INSTANCE.getSchema(Client.INTERACT_ENTITY);
-        FieldAccessor<PacketWrapper<?>, Boolean> field = (FieldAccessor<PacketWrapper<?>, Boolean>) schema.getAccessor("sneaking state");
+        FieldAccessor<PacketWrapper<?>, Boolean> field = (FieldAccessor<PacketWrapper<?>, Boolean>) schema.getAccessor("sneaking");
         assertNotNull(field);
         assertNotNull(field.setter());
         WrapperPlayClientInteractEntity packet = mock(WrapperPlayClientInteractEntity.class);

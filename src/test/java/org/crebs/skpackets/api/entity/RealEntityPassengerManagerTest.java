@@ -21,6 +21,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
 class RealEntityPassengerManagerTest {
@@ -122,10 +124,13 @@ class RealEntityPassengerManagerTest {
             WrapperEntity first = fixture.passenger(11, fixture.player1Id);
             WrapperEntity second = fixture.passenger(12, fixture.player1Id);
             fixture.manager.update(fixture.vehicle, List.of(first), true);
+            assertTrue(fixture.manager.isMounted(first));
             fixture.manager.forgetViewer(fixture.player1Id);
+            assertFalse(fixture.manager.isMounted(first));
             fixture.manager.update(fixture.vehicle, List.of(second), true);
             fixture.assertLast(fixture.player1Id, 1, 99, 12);
             fixture.manager.forgetVehicle(fixture.vehicle);
+            assertFalse(fixture.manager.isMounted(second));
             fixture.manager.update(fixture.vehicle, List.of(first), true);
             fixture.assertLast(fixture.player1Id, 1, 99, 11);
         }

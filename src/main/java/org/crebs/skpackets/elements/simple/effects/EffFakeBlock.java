@@ -81,13 +81,11 @@ public final class EffFakeBlock extends Effect {
                 manager.clear(viewer);
                 continue;
             }
-            for (Location location : positions) {
-                try {
-                    if (mode == 0) manager.show(viewer, location, state, keep);
-                    else manager.reset(viewer, location);
-                } catch (IllegalArgumentException ex) {
-                    Skript.error(ex.getMessage());
-                }
+            try {
+                if (mode == 0) manager.show(viewer, java.util.Arrays.asList(positions), state, keep);
+                else manager.reset(viewer, java.util.Arrays.asList(positions));
+            } catch (IllegalArgumentException ex) {
+                Skript.error(ex.getMessage());
             }
         }
     }

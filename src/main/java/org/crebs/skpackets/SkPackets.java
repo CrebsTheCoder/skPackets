@@ -1,6 +1,7 @@
 package org.crebs.skpackets;
 
 import com.github.shanebeee.skr.Registration;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.crebs.skpackets.api.entity.PacketEntityManager;
 import org.crebs.skpackets.api.simple.FakeBlockManager;
@@ -44,6 +45,7 @@ public final class SkPackets extends JavaPlugin {
     private ElementRuntime elementRuntime;
     private Registration registration;
     private org.crebs.skpackets.api.update.UpdateChecker updateChecker;
+    private Metrics metrics;
 
     public static SkPackets getInstance() {
         if (instance == null) {
@@ -92,12 +94,17 @@ public final class SkPackets extends JavaPlugin {
         registration.finalizeRegistration();
         ElementCounts.log(registration, getServer().getConsoleSender());
         saveDefaultConfig();
+        metrics = new Metrics(this, 35259);
         updateChecker = new org.crebs.skpackets.api.update.UpdateChecker(this);
         updateChecker.start();
     }
 
     @Override
     public void onDisable() {
+        if (metrics != null) {
+            metrics.shutdown();
+            metrics = null;
+        }
         if (updateChecker != null) {
             updateChecker.close();
             updateChecker = null;

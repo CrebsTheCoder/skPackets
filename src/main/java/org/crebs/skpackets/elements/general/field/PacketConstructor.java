@@ -9,10 +9,10 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.crebs.skpackets.api.util.field.ConstructionContext;
 
 import java.io.IOException;
-import java.lang.classfile.Attributes;
-import java.lang.classfile.ClassFile;
-import java.lang.classfile.MethodModel;
-import java.lang.classfile.TypeAnnotation;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.TypeReference;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -60,9 +60,11 @@ record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument>
         try (var stream = wrapper.getResourceAsStream("/" + wrapper.getName().replace('.', '/') + ".class")) {
             if (stream == null) throw new IllegalStateException("Cannot read PacketEvents class " + wrapper.getName());
             PacketConstructor selected = null;
-            for (MethodModel model : ClassFile.of().parse(stream.readAllBytes()).methods()) {
-                if (!model.methodName().equalsString("<init>")) continue;
-                Constructor<?> constructor = constructors.get(model.methodType().stringValue());
+            ClassNode classNode = new ClassNode();
+            new ClassReader(stream).accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            for (MethodNode model : classNode.methods) {
+                if (!model.name.equals("<init>")) continue;
+                Constructor<?> constructor = constructors.get(model.desc);
                 if (constructor == null || selected != null && constructor.getParameterCount() < selected.arguments().size()) continue;
                 var parameters = constructor.getParameters();
                 List<Argument> arguments = new ArrayList<>();
@@ -102,12 +104,16 @@ record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument>
         }
     }
 
-    private static boolean nullable(MethodModel model, int index) {
-        return Stream.concat(
-                model.findAttribute(Attributes.runtimeInvisibleTypeAnnotations()).stream().flatMap(attribute -> attribute.annotations().stream()),
-                model.findAttribute(Attributes.runtimeVisibleTypeAnnotations()).stream().flatMap(attribute -> attribute.annotations().stream()))
-                .anyMatch(annotation -> annotation.targetInfo() instanceof TypeAnnotation.FormalParameterTarget target
-                        && target.formalParameterIndex() == index && annotation.targetPath().isEmpty()
-                        && annotation.annotation().className().stringValue().endsWith("/Nullable;"));
+    private static boolean nullable(MethodNode model, int index) {
+        return Stream.of(model.invisibleTypeAnnotations, model.visibleTypeAnnotations)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .anyMatch(annotation -> {
+                    TypeReference target = new TypeReference(annotation.typeRef);
+                    return target.getSort() == TypeReference.METHOD_FORMAL_PARAMETER
+                            && target.getFormalParameterIndex() == index
+                            && (annotation.typePath == null || annotation.typePath.getLength() == 0)
+                            && annotation.desc.endsWith("/Nullable;");
+                });
     }
 }

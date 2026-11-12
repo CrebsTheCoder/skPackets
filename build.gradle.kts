@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.crebs"
-version = "1.0.2"
+version = "1.0.3"
 
 val mockitoAgent by configurations.creating
 
@@ -27,6 +27,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.ow2.asm:asm-tree:9.11.1")
     implementation("org.bstats:bstats-bukkit:3.2.1")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -47,7 +48,7 @@ dependencies {
         isTransitive = false
     }
     implementation("com.github.ShaneBeee:SkriptRegistration:1.5.0")
-    compileOnly("io.papermc.paper:paper-api:26.3.build.195-stable") {
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT") {
         exclude(group = "org.apache.maven", module = "maven-resolver-provider")
         exclude(group = "org.apache.logging.log4j", module = "log4j-api")
     }
@@ -65,7 +66,7 @@ java {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
-    options.release.set(25)
+    options.release.set(21)
 }
 
 tasks.processResources {
@@ -78,6 +79,7 @@ tasks.processResources {
 tasks.shadowJar {
     archiveClassifier.set("")
     relocate("org.bstats", "org.crebs.skpackets.libs.bstats")
+    relocate("org.objectweb.asm", "org.crebs.skpackets.libs.asm")
     relocate("me.tofaa.entitylib", "org.crebs.skpackets.libs.entitylib")
     relocate("com.github.shanebeee.skr", "org.crebs.skpackets.libs.skr")
     mergeServiceFiles()

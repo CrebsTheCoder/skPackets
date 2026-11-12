@@ -338,8 +338,7 @@ public class PlayerSkinManager {
         send(
                 player,
                 new WrapperPlayServerPlayerAbilities(
-                        player.isInvulnerableTo(
-                                org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.GENERIC).build())
+                        player.isInvulnerable()
                                 || player.getGameMode() == org.bukkit.GameMode.CREATIVE
                                 || player.getGameMode() == org.bukkit.GameMode.SPECTATOR,
                         player.isFlying(),

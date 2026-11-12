@@ -46,12 +46,12 @@ Create client-side entities, send packets, and change what individual players se
 
 | Dependency | Version | Notes |
 | :--- | :--- | :--- |
-| Paper | **26.3+** | Required |
+| Paper | **1.21.11+** | Required |
 | Skript | **2.17.0+** | Required |
 | PacketEvents | **2.14.0+** | Required |
 | [SkBee](https://modrinth.com/plugin/skbee/versions) | **3.26.0+** | Optional; enables the NBT Compound hook |
 
-Only the latest supported Skript and Minecraft versions receive support. Older versions may work, but are not officially supported.
+Minecraft 1.21.11 and newer versions supported by the required dependencies are supported. Java 21 or newer is required; use the Java version required by your Paper version.
 
 ---
 

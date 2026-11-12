@@ -75,6 +75,30 @@ class PacketFieldSectionsTest {
         }
     }
 
+    @Test void openSignEditorAcceptsBothPositionNames() throws Exception {
+        var schema = PacketFieldRegistry.INSTANCE.getSchema(PacketType.Play.Server.OPEN_SIGN_EDITOR);
+        assertSame(schema.getAccessor("block position"), schema.getAccessor("position"));
+        assertTrue(schema.getReadableFields().contains("block position|position"));
+        for (String name : List.of("block position", "position")) {
+            Map<String, Expression<?>> expressions = new HashMap<>();
+            try (var parsers = mockConstruction(SkriptParser.class, (parser, context) -> {
+                String input = (String) context.arguments().getFirst();
+                Object value = input.equals("position-value") ? new org.bukkit.util.Vector(2, 64, -3)
+                        : org.bukkit.block.sign.Side.FRONT;
+                doReturn(new SimpleLiteral<>(value, false)).when(parser).parseExpression(any(Class[].class));
+            })) {
+                String text = name + ": position-value\nsign side: front\n";
+                var node = new Config(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), "test.sk", true, true, ":").getMainNode();
+                assertTrue(PacketFieldSections.parse(schema.accessors(), node, expressions, "open sign editor"));
+                var packet = (com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenSignEditor)
+                        FieldSections.create(schema, PacketType.Play.Server.OPEN_SIGN_EDITOR, expressions, mock(org.bukkit.event.Event.class), Map.of());
+                assertNotNull(packet);
+                assertEquals(new com.github.retrooper.packetevents.util.Vector3i(2, 64, -3), packet.getPosition());
+                assertTrue(packet.isFrontText());
+            }
+        }
+    }
+
     @Test void rejectsBothCanonicalNameAndAliasInsteadOfSilentlyIgnoringOne() throws Exception {
         var schema = PacketFieldRegistry.INSTANCE.getSchema(PacketType.Play.Server.PLAYER_ABILITIES);
         String text = "god mode: true\nin god mode: false\n";

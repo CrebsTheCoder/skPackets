@@ -66,7 +66,7 @@ public record FieldSchema<K, O>(
             attributes.add(accessor.isOptional() ? "optional" : "required");
             if (accessor.getter() == null) attributes.add("creation-only");
             String names = accessor.name() + (accessor.aliases().length == 0 ? "" : "|" + String.join("|", accessor.aliases()));
-            fieldStrings.add("- `" + names + ": " + typeName(accessor.expectedType()) + "` ("
+            fieldStrings.add("- `" + names + ": " + fieldTypeName(accessor.nativeType(), accessor.expectedType()) + "` ("
                     + String.join("; ", attributes) + ")");
             Class<?> valueType = accessor.expectedType().isArray()
                     ? accessor.expectedType().getComponentType() : accessor.expectedType();
@@ -86,6 +86,27 @@ public record FieldSchema<K, O>(
             }
         }
         return String.join("\n", fieldStrings);
+    }
+
+    private static String fieldTypeName(java.lang.reflect.Type nativeType, Class<?> expectedType) {
+        var raw = org.crebs.skpackets.elements.general.field.PacketArguments.raw(nativeType);
+        if (raw == java.util.BitSet.class) return "bit indices (numbers)";
+        if (raw == byte[][].class) return "byte arrays";
+        if (raw == java.util.Optional.class)
+            return fieldTypeName(org.crebs.skpackets.elements.general.field.PacketArguments.argument(nativeType, 0), expectedType);
+        if (java.util.Map.class.isAssignableFrom(raw)) {
+            var key = org.crebs.skpackets.elements.general.field.PacketArguments.argument(nativeType, 0);
+            var value = org.crebs.skpackets.elements.general.field.PacketArguments.argument(nativeType, 1);
+            return "map of " + fieldTypeName(key, org.crebs.skpackets.elements.general.field.PacketArguments.expressionType(key))
+                    + " to " + fieldTypeName(value, org.crebs.skpackets.elements.general.field.PacketArguments.expressionType(value));
+        }
+        if (expectedType == org.crebs.skpackets.elements.general.field.PacketValue.class)
+            return org.crebs.skpackets.elements.general.field.PacketValueTypes.label(raw);
+        if (expectedType.isArray() && expectedType.getComponentType() == org.crebs.skpackets.elements.general.field.PacketValue.class)
+            return org.crebs.skpackets.elements.general.field.PacketValueTypes.label(
+                    org.crebs.skpackets.elements.general.field.PacketArguments.raw(
+                            org.crebs.skpackets.elements.general.field.PacketRecords.elementType(nativeType))) + " values";
+        return typeName(expectedType);
     }
 
     private static String typeName(Class<?> type) {

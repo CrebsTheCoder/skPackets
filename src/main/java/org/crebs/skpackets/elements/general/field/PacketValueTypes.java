@@ -65,7 +65,7 @@ public final class PacketValueTypes {
             return "packet team name tag visibility";
         
         String name = type.getName();
-        name = name.substring(name.lastIndexOf('.') + 1).replace('$', ' ');
+        name = name.substring(Math.max(name.lastIndexOf('.'), name.lastIndexOf('$')) + 1);
         return "packet " + PacketReflection.fieldName(name.replace("Wrapper", ""));
     }
 }

@@ -34,7 +34,9 @@ final class PacketFieldRules {
             entry(WrapperPlayServerEntityStatus.class, Map.of("status", DEFAULT.adapting(STATUS_BYTE))),
             entry(WrapperPlayServerGameTestHighlightPos.class, Map.of("relativepos", DEFAULT.defaulting(Vector::new))),
             entry(WrapperPlayServerEntityMetadata.class, Map.of("entitymetadata", DEFAULT.adapting(ENTITY_META))),
-            entry(WrapperPlayServerOpenSignEditor.class, Map.of("isfronttext", named("sign side").adapting(SIGN_SIDE))),
+            entry(WrapperPlayServerOpenSignEditor.class, Map.of(
+                    "position", named("block position"),
+                    "isfronttext", named("sign side").adapting(SIGN_SIDE))),
             entry(WrapperPlayServerCloseWindow.class, Map.of("id", DEFAULT.defaulting(() -> 0))),
             entry(WrapperPlayClientUpdateSign.class, Map.of("isfronttext", named("sign side").adapting(SIGN_SIDE))),
             entry(WrapperPlayClientInteractEntity.class, Map.of("sneaking", DEFAULT.adapting(SNEAKING))),

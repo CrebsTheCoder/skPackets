@@ -104,7 +104,7 @@ record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument>
         }
     }
 
-    private static boolean nullable(MethodNode model, int index) {
+    static boolean nullable(MethodNode model, int index) {
         return Stream.of(model.invisibleTypeAnnotations, model.visibleTypeAnnotations)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)

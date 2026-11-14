@@ -13,7 +13,15 @@ import java.util.function.Function;
 public final class PacketRecords {
     private PacketRecords() {}
     public record Shape(List<FieldAccessor<Object, ?>> fields, Map<String, Object> defaults,
-                        Function<Map<String, Object>, Object> factory) {}
+                        Function<Map<String, Object>, Object> factory, List<Shape> alternatives) {
+        public Shape(List<FieldAccessor<Object, ?>> fields, Map<String, Object> defaults,
+                     Function<Map<String, Object>, Object> factory) {
+            this(fields, defaults, factory, List.of());
+        }
+        Shape select(Set<String> supplied, String name) {
+            return alternatives.isEmpty() ? this : PacketValueDiscovery.select(alternatives, supplied, name);
+        }
+    }
     private static final Map<Class<?>, Shape> SHAPES = new HashMap<>();
     static {
         define(Equipment.class, List.of(
@@ -83,16 +91,21 @@ public final class PacketRecords {
     public static Object construct(PacketRecord record, Type type, String name) {
         Shape shape = shape(type);
         if (shape == null) throw new IllegalArgumentException("Packet field '" + name + "' does not support nested entries.");
+        return construct(record.fields(), shape.select(record.fields().keySet(), name), name);
+    }
+    static Object construct(Map<String, Object> supplied, Shape shape, String name) {
         Map<String, Object> values = new HashMap<>(shape.defaults());
-        for (String key : record.fields().keySet()) {
+        for (String key : supplied.keySet()) {
             if (shape.fields().stream().noneMatch(f -> f.name().equals(key)))
                 throw new IllegalArgumentException("Unknown nested packet field '" + name + "." + key + "'.");
         }
-        values.putAll(record.fields());
+        values.putAll(supplied);
         Map<String, Object> converted = new HashMap<>();
         for (var field : shape.fields()) {
             Object value = values.get(field.name());
             if (value == null && !field.isOptional()) throw new IllegalArgumentException("Missing packet field '" + name + "." + field.name() + "'.");
+            if (value == null && PacketArguments.raw(field.nativeType()) == Optional.class)
+                converted.put(field.name(), Optional.empty());
             if (value != null) converted.put(field.name(), PacketArguments.convert(value, field.nativeType(), name + "." + field.name()));
         }
         return shape.factory().apply(converted);

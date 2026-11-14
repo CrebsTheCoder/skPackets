@@ -23,15 +23,42 @@ final class PacketValueDiscovery {
                     || parameter.getType().getSimpleName().endsWith("Event")
                     || parameter.getType().getSimpleName().equals("ClientVersion")
                     || parameter.getType().getSimpleName().equals("ServerVersion")));
-        candidates.sort(Comparator.<Executable>comparingInt(value -> (int) Arrays.stream(value.getGenericParameterTypes())
-                .filter(t -> PacketArguments.expressionType(t) == PacketValue.class).count())
-                .thenComparing(Comparator.comparingInt(Executable::getParameterCount).reversed())
-                .thenComparing(Executable::toGenericString));
+        candidates.sort(Comparator.comparing(Executable::toGenericString));
         if (candidates.isEmpty()) return null;
-        Executable selected = candidates.getFirst();
+        List<PacketRecords.Shape> shapes = candidates.stream().map(PacketValueDiscovery::shape).toList();
+        Map<String, FieldAccessor<Object, ?>> fields = new LinkedHashMap<>();
+        for (var shape : shapes) for (var field : shape.fields())
+            fields.putIfAbsent(field.name(), field(field.name(), field.nativeType(), true));
+        return new PacketRecords.Shape(List.copyOf(fields.values()), Map.of(), values ->
+                PacketRecords.construct(values, select(shapes, values.keySet(), type.getSimpleName()), type.getSimpleName()), shapes);
+    }
+
+    static PacketRecords.Shape select(List<PacketRecords.Shape> shapes, Set<String> supplied, String name) {
+        List<PacketRecords.Shape> matches = shapes.stream().filter(shape -> {
+            Set<String> names = new HashSet<>();
+            for (var field : shape.fields()) {
+                names.add(field.name());
+                if (!field.isOptional() && !supplied.contains(field.name())) return false;
+            }
+            return names.containsAll(supplied);
+        }).toList();
+        // Prefer the builder that needs the fewest omitted optional inputs.
+        int size = matches.stream().mapToInt(shape -> shape.fields().size()).min().orElse(-1);
+        matches = matches.stream().filter(shape -> shape.fields().size() == size).toList();
+        if (matches.size() != 1) throw new IllegalArgumentException(
+                (matches.isEmpty() ? "No matching" : "Ambiguous") + " nested builder for '" + name
+                + "' with fields " + new TreeSet<>(supplied) + ". Available builders: "
+                + shapes.stream().map(shape -> shape.fields().stream().map(field -> field.name()
+                    + ": " + field.nativeType().getTypeName() + (field.isOptional() ? " (optional)" : " (required)")).toList()).toList());
+        return matches.getFirst();
+    }
+
+    private static PacketRecords.Shape shape(Executable selected) {
         List<FieldAccessor<Object, ?>> fields = new ArrayList<>();
         for (Parameter parameter : selected.getParameters())
-            fields.add(field(PacketReflection.fieldName(parameter.getName()), parameter.getParameterizedType()));
+            fields.add(field(PacketReflection.fieldName(parameter.getName()), parameter.getParameterizedType(),
+                    nullable(selected, fields.size()) || parameter.getType() == Optional.class
+                    || parameter.getType() == BitSet.class || parameter.getType().isArray()));
         Map<String, Object> defaults = new HashMap<>();
         for (var field : fields) {
             Class<?> raw = PacketArguments.raw(field.nativeType());
@@ -47,13 +74,32 @@ final class PacketValueDiscovery {
                 return result;
             } catch (ReflectiveOperationException exception) {
                 Throwable cause = exception instanceof InvocationTargetException invocation ? invocation.getCause() : exception;
-                throw new IllegalArgumentException("Cannot build " + PacketValueTypes.label(type) + ": " + cause.getMessage(), cause);
+                throw new IllegalArgumentException("Cannot build " + PacketValueTypes.label(selected.getDeclaringClass()) + ": " + cause.getMessage(), cause);
             }
         });
     }
 
+    private static boolean nullable(Executable executable, int index) {
+        Class<?> owner = executable.getDeclaringClass();
+        try (var stream = owner.getResourceAsStream("/" + owner.getName().replace('.', '/') + ".class")) {
+            if (stream == null) throw new IllegalStateException("Cannot read " + owner.getName());
+            var node = new org.objectweb.asm.tree.ClassNode();
+            new org.objectweb.asm.ClassReader(stream).accept(node, org.objectweb.asm.ClassReader.SKIP_CODE
+                    | org.objectweb.asm.ClassReader.SKIP_DEBUG | org.objectweb.asm.ClassReader.SKIP_FRAMES);
+            String descriptor = executable instanceof Constructor<?> constructor
+                    ? org.objectweb.asm.Type.getConstructorDescriptor(constructor)
+                    : org.objectweb.asm.Type.getMethodDescriptor((Method) executable);
+            for (var method : node.methods) if (method.desc.equals(descriptor)
+                    && method.name.equals(executable instanceof Constructor<?> ? "<init>" : executable.getName()))
+                return PacketConstructor.nullable(method, index);
+            return false;
+        } catch (java.io.IOException exception) {
+            throw new IllegalStateException("Cannot read " + owner.getName(), exception);
+        }
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static FieldAccessor<Object, ?> field(String name, Type type) {
-        return new FieldAccessor(name, new String[0], PacketArguments.expressionType(type), PacketArguments.raw(type) == BitSet.class || PacketArguments.raw(type).isArray(), null, null, type);
+    private static FieldAccessor<Object, ?> field(String name, Type type, boolean optional) {
+        return new FieldAccessor(name, new String[0], PacketArguments.expressionType(type), optional, null, null, type);
     }
 }

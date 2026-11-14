@@ -15,7 +15,10 @@ public final class PacketArguments {
 
     public static Class<?> expressionType(Type type) {
         Class<?> raw = raw(type);
+        if (raw == BitSet.class) return Number[].class;
+        if (raw == byte[][].class) return PacketValue[].class;
         if (raw == Optional.class) return expressionType(argument(type, 0));
+        if (Map.class.isAssignableFrom(raw)) return PacketValue[].class;
         if (raw.isArray()) return arrayType(expressionType(raw.getComponentType()));
         if (Collection.class.isAssignableFrom(raw)) return arrayType(expressionType(argument(type, 0)));
         return PUBLIC_TYPES.computeIfAbsent(raw, PacketArguments::scalarType);
@@ -59,6 +62,17 @@ public final class PacketArguments {
         }
         if (value instanceof PacketRecord record) value = PacketRecords.construct(record, type, name);
         if (value == null) throw invalid(name, type, null);
+        if (target == BitSet.class) {
+            if (value instanceof BitSet bits) return bits.clone();
+            BitSet bits = new BitSet();
+            for (Object index : elements(value)) {
+                if (!(index instanceof Number number)) throw invalid(name, type, index);
+                int bit = (int) PacketNumbers.convert(number, int.class, name);
+                if (bit < 0 || bit > 1048575) throw new IllegalArgumentException("Bit index must be between 0 and 1048575: " + name);
+                bits.set(bit);
+            }
+            return bits;
+        }
         if (target.isArray()) return convertArray(value, type, name);
         if (Collection.class.isAssignableFrom(target)) return convertCollection(value, type, name);
         if (Map.class.isAssignableFrom(target)) return convertMap(value, type, name);
@@ -104,7 +118,22 @@ public final class PacketArguments {
     }
 
     private static Object convertMap(Object value, Type type, String name) {
-        if (!(value instanceof Map<?, ?> input)) throw invalid(name, type, value);
+        Map<?, ?> input;
+        if (value instanceof Map<?, ?> map) input = map;
+        else {
+            Map<Object, Object> entries = new LinkedHashMap<>();
+            for (Object entry : elements(value)) {
+                if (entry instanceof PacketValue wrapped) entry = wrapped.value();
+                if (!(entry instanceof PacketRecord record)) throw invalid(name, type, entry);
+                if (!record.fields().keySet().equals(Set.of("key", "value")))
+                    throw new IllegalArgumentException("Map entry '" + name + "' requires key and value.");
+                Object key = convert(record.fields().get("key"), argument(type, 0), name + " key");
+                Object item = convert(record.fields().get("value"), argument(type, 1), name + " value");
+                if (entries.putIfAbsent(key, item) != null)
+                    throw new IllegalArgumentException("Duplicate map key in '" + name + "': " + key);
+            }
+            return entries;
+        }
         Map<Object, Object> result = new LinkedHashMap<>();
         input.forEach((key, entry) -> result.put(convert(key, argument(type, 0), name + " key"),
                 convert(entry, argument(type, 1), name + " value")));
@@ -125,6 +154,11 @@ public final class PacketArguments {
     static Object toSkript(Object value) {
         if (value == null) return null;
         if (value instanceof Optional<?> optional) return toSkript(optional.orElse(null));
+        if (value instanceof BitSet bits) return bits.stream().mapToObj(Integer::valueOf).toArray(Number[]::new);
+        if (value instanceof byte[][] rows) return Arrays.stream(rows).map(PacketValue::new).toArray(PacketValue[]::new);
+        if (value instanceof Map<?, ?> map) return map.entrySet().stream()
+                .map(entry -> new PacketValue(new PacketRecord(Map.of(
+                        "key", toSkript(entry.getKey()), "value", toSkript(entry.getValue()))))).toArray(PacketValue[]::new);
         if (value instanceof Collection<?> collection) return collection.stream().map(PacketArguments::toSkript).toArray();
         if (value.getClass().isArray()) return Arrays.stream(elements(value)).map(PacketArguments::toSkript).toArray();
         var codec = PacketValueCodecs.find(value.getClass());

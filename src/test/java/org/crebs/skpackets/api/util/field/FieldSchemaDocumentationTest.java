@@ -83,6 +83,18 @@ class FieldSchemaDocumentationTest {
         assertTrue(docs.contains("field values: `\"update data\"`"));
     }
 
+    @Test
+    void complexMapFieldsDescribeTheirContentsAndNestedBuilder() throws Exception {
+        var nativeType = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkBiomes.class
+                .getMethod("getChunks").getGenericReturnType();
+        var accessor = field("chunks", org.crebs.skpackets.elements.general.field.PacketValue[].class, false, null)
+                .withNativeType(nativeType);
+        String docs = new FieldSchema<>("chunk biomes", List.of(accessor), null).getReadableFields();
+        assertTrue(docs.contains("chunks: map of vector2 to packet chunk biome data"));
+        assertTrue(docs.contains("key (required), value (required)"));
+        assertFalse(docs.contains("packet value"));
+    }
+
     private static <T> FieldAccessor<Object, T> field(String name, Class<T> type, boolean optional,
                                                     Function<Object, T> getter) {
         return new FieldAccessor<>(name, new String[0], type, optional, getter, null);

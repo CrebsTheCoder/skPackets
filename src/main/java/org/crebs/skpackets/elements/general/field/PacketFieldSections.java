@@ -80,15 +80,26 @@ public final class PacketFieldSections {
                     error("Duplicate list entry in '" + name + "': " + label); return null;
                 }
                 Map<String, Expression<?>> record = new LinkedHashMap<>();
-                if (!parse(shape.fields(), child, record, name + "." + label)) return null;
+                if (!parseSelected(shape, child, record, name + "." + label)) return null;
                 records.add(record);
             }
         } else {
             Map<String, Expression<?>> record = new LinkedHashMap<>();
-            if (!parse(shape.fields(), section, record, name)) return null;
+            if (!parseSelected(shape, section, record, name)) return null;
             records.add(record);
         }
         return new RecordsExpression(shape, records, !PacketRecords.isList(type));
+    }
+
+    private static boolean parseSelected(PacketRecords.Shape shape, SectionNode section,
+                                         Map<String, Expression<?>> record, String name) {
+        Set<String> supplied = new HashSet<>();
+        for (var node : section) if (!node.isVoid() && node.getKey() != null) supplied.add(node.getKey());
+        try {
+            return parse(shape.select(supplied, name).fields(), section, record, name);
+        } catch (IllegalArgumentException exception) {
+            return error(exception.getMessage());
+        }
     }
 
     private static boolean error(String message) { Skript.error(message); return false; }
@@ -103,15 +114,16 @@ public final class PacketFieldSections {
         @Override public boolean init(Expression<?>[] expressions, int pattern, Kleenean delayed, SkriptParser.ParseResult result) { return true; }
         @Override protected PacketValue[] get(Event event) {
             List<PacketValue> values = new ArrayList<>();
-            var schema = new FieldSchema<String, Object>("nested packet value", shape.fields(), context -> {
-                Map<String, Object> fields = new LinkedHashMap<>();
-                for (var field : shape.fields()) {
-                    Object value = context.getOptional(field.name(), Object.class);
-                    if (value != null) fields.put(field.name(), value);
-                }
-                return new PacketValue(new PacketRecord(fields));
-            });
             for (var record : records) {
+                var selected = shape.select(record.keySet(), "nested packet value");
+                var schema = new FieldSchema<String, Object>("nested packet value", selected.fields(), context -> {
+                    Map<String, Object> fields = new LinkedHashMap<>();
+                    for (var field : selected.fields()) {
+                        Object value = context.getOptional(field.name(), Object.class);
+                        if (value != null) fields.put(field.name(), value);
+                    }
+                    return new PacketValue(new PacketRecord(fields));
+                });
                 Object value = FieldSections.create(schema, "nested packet value", record, event, Map.of());
                 if (value == null) throw new IllegalArgumentException("A required nested packet entry evaluated to no value.");
                 values.add((PacketValue)value);

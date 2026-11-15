@@ -69,9 +69,8 @@ final class PacketValueDiscovery {
         return new PacketRecords.Shape(List.copyOf(fields), defaults, values -> {
             Object[] args = fields.stream().map(field -> values.get(field.name())).toArray();
             try {
-                Object result = selected instanceof Constructor<?> constructor ? constructor.newInstance(args)
+                return selected instanceof Constructor<?> constructor ? constructor.newInstance(args)
                         : ((Method) selected).invoke(null, args);
-                return result;
             } catch (ReflectiveOperationException exception) {
                 Throwable cause = exception instanceof InvocationTargetException invocation ? invocation.getCause() : exception;
                 throw new IllegalArgumentException("Cannot build " + PacketValueTypes.label(selected.getDeclaringClass()) + ": " + cause.getMessage(), cause);

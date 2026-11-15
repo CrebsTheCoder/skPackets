@@ -46,4 +46,20 @@ class PacketMapBuilderTest {
                 new PacketValue[]{entry(0, 0, 24), entry(0, 0, 24)}, type, "chunks"));
 
     }
+    Map<Integer, String> numericKeys;
+    @Test void rejectsMapKeysThatCollideAfterNumericConversion() throws Exception {
+        var input = new java.util.LinkedHashMap<Number, String>();
+        input.put(1, "first");
+        input.put(1L, "second");
+        var type = getClass().getDeclaredField("numericKeys").getGenericType();
+        var error = assertThrows(IllegalArgumentException.class, () -> PacketArguments.convert(input, type, "slots"));
+        assertTrue(error.getMessage().contains("Duplicate map key"));
+    }
+    @Test void emptyHashedSlotsSurviveReadAndCopy() throws Exception {
+        var type = com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow.class
+                .getMethod("getHashedSlots").getGenericReturnType();
+        var slots = Map.of(4, java.util.Optional.empty());
+        assertEquals(slots, PacketArguments.convert(PacketArguments.toSkript(slots), type, "hashed slots"));
+    }
+
 }

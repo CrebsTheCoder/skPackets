@@ -94,7 +94,13 @@ public final class PacketFieldSections {
     private static boolean parseSelected(PacketRecords.Shape shape, SectionNode section,
                                          Map<String, Expression<?>> record, String name) {
         Set<String> supplied = new HashSet<>();
-        for (var node : section) if (!node.isVoid() && node.getKey() != null) supplied.add(node.getKey());
+        for (var node : section) {
+            if (node.isVoid() || node.getKey() == null) continue;
+            // Before entry validation, simple nodes still contain the entire "field: value" line.
+            String key = node.getKey();
+            if (!(node instanceof SectionNode) && key.contains(":")) key = key.substring(0, key.indexOf(':')).trim();
+            supplied.add(key.toLowerCase(Locale.ROOT));
+        }
         try {
             return parse(shape.select(supplied, name).fields(), section, record, name);
         } catch (IllegalArgumentException exception) {

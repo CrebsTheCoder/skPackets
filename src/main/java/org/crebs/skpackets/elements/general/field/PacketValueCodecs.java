@@ -53,6 +53,50 @@ final class PacketValueCodecs {
 
     private static Map<Class<?>, PacketValueCodec<?, ?>> codecs() {
         List<PacketValueCodec<?, ?>> values = List.of(
+                text(com.github.retrooper.packetevents.protocol.nbt.NBTCompound.class,
+                        com.github.retrooper.packetevents.util.adventure.AdventureNbtUtil::toString,
+                        value -> com.github.retrooper.packetevents.util.adventure.AdventureNbtUtil.fromString(value)
+                                .castOrThrow(com.github.retrooper.packetevents.protocol.nbt.NBTCompound.class)),
+                text(com.github.retrooper.packetevents.protocol.nbt.NBT.class,
+                        com.github.retrooper.packetevents.util.adventure.AdventureNbtUtil::toString,
+                        com.github.retrooper.packetevents.util.adventure.AdventureNbtUtil::fromString),
+                text(com.google.gson.JsonObject.class, Object::toString,
+                        value -> com.google.gson.JsonParser.parseString(value).getAsJsonObject()),
+                text(java.time.Instant.class, java.time.Instant::toString, java.time.Instant::parse),
+                text(java.security.PublicKey.class,
+                        value -> java.util.Base64.getEncoder().encodeToString(value.getEncoded()),
+                        value -> java.security.KeyFactory.getInstance("RSA").generatePublic(
+                                new java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(value)))),
+                registry(com.github.retrooper.packetevents.protocol.chat.Parsers.Parser.class,
+                        com.github.retrooper.packetevents.protocol.chat.Parsers::getByName),
+                registry(com.github.retrooper.packetevents.protocol.entity.data.EntityDataType.class,
+                        com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.item.trimpattern.TrimPattern.class,
+                        com.github.retrooper.packetevents.protocol.item.trimpattern.TrimPatterns::getByName),
+                registry(com.github.retrooper.packetevents.protocol.component.ComponentType.class,
+                        com.github.retrooper.packetevents.protocol.component.ComponentTypes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.debug.DebugSubscription.class,
+                        key -> com.github.retrooper.packetevents.protocol.debug.DebugSubscriptions.getRegistry().getByName(key)),
+                registry(com.github.retrooper.packetevents.protocol.particle.type.ParticleType.class,
+                        com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.recipe.RecipeSerializer.class,
+                        com.github.retrooper.packetevents.protocol.recipe.RecipeSerializers::getByName),
+                registry(com.github.retrooper.packetevents.protocol.world.dimension.DimensionType.class,
+                        key -> com.github.retrooper.packetevents.protocol.world.dimension.DimensionTypes.getRegistry().getByName(key)),
+                registry(com.github.retrooper.packetevents.protocol.dialog.Dialog.class,
+                        key -> com.github.retrooper.packetevents.protocol.dialog.Dialogs.getRegistry().getByName(key)),
+                registry(com.github.retrooper.packetevents.protocol.attribute.Attribute.class,
+                        com.github.retrooper.packetevents.protocol.attribute.Attributes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.chat.ChatType.class,
+                        com.github.retrooper.packetevents.protocol.chat.ChatTypes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.item.mapdecoration.MapDecorationType.class,
+                        com.github.retrooper.packetevents.protocol.item.mapdecoration.MapDecorationTypes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.world.damagetype.DamageType.class,
+                        com.github.retrooper.packetevents.protocol.world.damagetype.DamageTypes::getByName),
+                registry(com.github.retrooper.packetevents.protocol.recipe.category.RecipeBookCategory.class,
+                        key -> com.github.retrooper.packetevents.protocol.recipe.category.RecipeBookCategories.getRegistry().getByName(key)),
+                registry(com.github.retrooper.packetevents.protocol.world.clock.WorldClock.class,
+                        key -> com.github.retrooper.packetevents.protocol.world.clock.WorldClocks.getRegistry().getByName(key)),
                 new PacketValueCodec<>(Vector2i.class, Vector2.class,
                         value -> new Vector2(value.getX(), value.getZ()),
                         (value, name) -> new Vector2i((int) PacketNumbers.convert(value.x(), int.class, name + " x"),
@@ -139,6 +183,33 @@ final class PacketValueCodecs {
         org.bukkit.inventory.ItemStack item = value.getRandom();
         if (item == null) throw new IllegalArgumentException("Packet field '" + name + "' requires an item type that can produce an item.");
         return SpigotConversionUtil.fromBukkitItemMaterial(item.getType());
+    }
+
+    @FunctionalInterface
+    private interface TextParser<P> {
+        P parse(String value) throws Exception;
+    }
+
+    private static <P> PacketValueCodec<P, String> text(Class<P> type,
+            java.util.function.Function<P, String> reader, TextParser<P> parser) {
+        return new PacketValueCodec<>(type, String.class, reader, (value, name) -> {
+            try {
+                return parser.parse(value);
+            } catch (Exception exception) {
+                throw new IllegalArgumentException("Invalid " + PacketValueTypes.label(type)
+                        + " for packet field '" + name + "': " + exception.getMessage(), exception);
+            }
+        });
+    }
+
+    private static <P extends com.github.retrooper.packetevents.protocol.mapper.MappedEntity>
+    PacketValueCodec<P, String> registry(Class<P> type, java.util.function.Function<String, P> lookup) {
+        return new PacketValueCodec<>(type, String.class, value -> value.getName().toString(), (key, name) -> {
+            P result = lookup.apply(key);
+            if (result == null) throw new IllegalArgumentException("Unknown " + PacketValueTypes.label(type)
+                    + " key for packet field '" + name + "': " + key);
+            return result;
+        });
     }
 
     private static org.bukkit.inventory.EquipmentSlot equipmentSlot(EquipmentSlot value) {

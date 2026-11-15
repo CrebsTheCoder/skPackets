@@ -125,18 +125,24 @@ public final class PacketArguments {
             for (Object entry : elements(value)) {
                 if (entry instanceof PacketValue wrapped) entry = wrapped.value();
                 if (!(entry instanceof PacketRecord record)) throw invalid(name, type, entry);
-                if (!record.fields().keySet().equals(Set.of("key", "value")))
+                if (!record.fields().containsKey("key") || !Set.of("key", "value").containsAll(record.fields().keySet())
+                        || !record.fields().containsKey("value") && raw(argument(type, 1)) != Optional.class)
                     throw new IllegalArgumentException("Map entry '" + name + "' requires key and value.");
                 Object key = convert(record.fields().get("key"), argument(type, 0), name + " key");
                 Object item = convert(record.fields().get("value"), argument(type, 1), name + " value");
                 if (entries.putIfAbsent(key, item) != null)
                     throw new IllegalArgumentException("Duplicate map key in '" + name + "': " + key);
             }
+            if (!raw(type).isInstance(entries)) throw invalid(name, type, value);
             return entries;
         }
         Map<Object, Object> result = new LinkedHashMap<>();
-        input.forEach((key, entry) -> result.put(convert(key, argument(type, 0), name + " key"),
-                convert(entry, argument(type, 1), name + " value")));
+        input.forEach((key, entry) -> {
+            Object convertedKey = convert(key, argument(type, 0), name + " key");
+            Object convertedValue = convert(entry, argument(type, 1), name + " value");
+            if (result.putIfAbsent(convertedKey, convertedValue) != null)
+                throw new IllegalArgumentException("Duplicate map key in '" + name + "': " + convertedKey);
+        });
         if (!raw(type).isInstance(result)) throw invalid(name, type, value);
         return result;
     }
@@ -154,17 +160,22 @@ public final class PacketArguments {
     static Object toSkript(Object value) {
         if (value == null) return null;
         if (value instanceof Optional<?> optional) return toSkript(optional.orElse(null));
-        if (value instanceof BitSet bits) return bits.stream().mapToObj(Integer::valueOf).toArray(Number[]::new);
+        if (value instanceof BitSet bits) return bits.stream().boxed().toArray(Number[]::new);
         if (value instanceof byte[][] rows) return Arrays.stream(rows).map(PacketValue::new).toArray(PacketValue[]::new);
         if (value instanceof Map<?, ?> map) return map.entrySet().stream()
                 .map(entry -> new PacketValue(new PacketRecord(Map.of(
-                        "key", toSkript(entry.getKey()), "value", toSkript(entry.getValue()))))).toArray(PacketValue[]::new);
+                        "key", mapElement(entry.getKey()), "value", mapElement(entry.getValue()))))).toArray(PacketValue[]::new);
         if (value instanceof Collection<?> collection) return collection.stream().map(PacketArguments::toSkript).toArray();
         if (value.getClass().isArray()) return Arrays.stream(elements(value)).map(PacketArguments::toSkript).toArray();
         var codec = PacketValueCodecs.find(value.getClass());
         if (codec != null) return codec.read(value);
         if (value instanceof Enum<?> entry && expressionType(entry.getDeclaringClass()) == String.class) return enumName(entry);
         return expressionType(value.getClass()) == PacketValue.class ? new PacketValue(value) : value;
+    }
+
+    private static Object mapElement(Object value) {
+        // A copied map entry must retain an empty optional instead of storing a null in PacketRecord.
+        return value instanceof Optional<?> optional && optional.isEmpty() ? new PacketValue(optional) : toSkript(value);
     }
 
     private static Object[] elements(Object value) {

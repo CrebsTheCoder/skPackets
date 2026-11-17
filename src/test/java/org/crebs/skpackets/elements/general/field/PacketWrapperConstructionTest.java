@@ -2,13 +2,17 @@ package org.crebs.skpackets.elements.general.field;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import org.crebs.skpackets.api.general.packet.PacketTypeRegistry;
-import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
-import org.junit.jupiter.api.*;
+import org.crebs.skpackets.api.general.packet.PacketTypeRegistry;
+import org.crebs.skpackets.support.PacketEventsTestBootstrap;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

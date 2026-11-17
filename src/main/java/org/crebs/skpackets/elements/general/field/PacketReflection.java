@@ -4,7 +4,8 @@ import org.crebs.skpackets.api.general.packet.PacketAccessManager;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
 
 final class PacketReflection {
     private PacketReflection() {}

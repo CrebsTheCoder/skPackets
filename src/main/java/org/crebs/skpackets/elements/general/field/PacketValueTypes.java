@@ -5,7 +5,10 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.github.shanebeee.skr.Registration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public final class PacketValueTypes {
     private PacketValueTypes() {}
@@ -65,7 +68,7 @@ public final class PacketValueTypes {
             return "packet team name tag visibility";
         
         String name = type.getName();
-        name = name.substring(name.lastIndexOf('.') + 1).replace('$', ' ');
+        name = name.substring(Math.max(name.lastIndexOf('.'), name.lastIndexOf('$')) + 1);
         return "packet " + PacketReflection.fieldName(name.replace("Wrapper", ""));
     }
 }

@@ -2,27 +2,27 @@ package org.crebs.skpackets.elements;
 
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.registrations.Classes;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.shanebeee.skr.Registration;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import org.bukkit.plugin.PluginManager;
 import org.crebs.skpackets.api.entity.metadata.EntityMeta;
 import org.crebs.skpackets.api.util.field.BaseFieldRegistry;
-import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
-import org.crebs.skpackets.elements.general.section.SecExprNewPacket;
-import org.crebs.skpackets.elements.entity.section.SecExprNewFakeEntity;
-import org.crebs.skpackets.elements.entity.section.SecExprNewMeta;
-import org.skriptlang.skript.Skript;
-import org.bukkit.plugin.PluginManager;
-import org.crebs.skpackets.elements.general.GeneralModule;
 import org.crebs.skpackets.elements.entity.EntityModule;
 import org.crebs.skpackets.elements.entity.field.entity.FakeEntityFieldRegistry;
 import org.crebs.skpackets.elements.entity.field.meta.MetaFieldRegistry;
+import org.crebs.skpackets.elements.entity.section.SecExprNewFakeEntity;
+import org.crebs.skpackets.elements.entity.section.SecExprNewMeta;
+import org.crebs.skpackets.elements.general.GeneralModule;
+import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
+import org.crebs.skpackets.elements.general.section.SecExprNewPacket;
 import org.crebs.skpackets.elements.simple.SimpleModule;
 import org.crebs.skpackets.elements.team.TeamModule;
 import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.crebs.skpackets.support.SkriptRegistrationTestSupport;
 import org.junit.jupiter.api.Test;
+import org.skriptlang.skript.Skript;
 import org.skriptlang.skript.bukkit.lang.eventvalue.EventValueRegistry;
 import org.skriptlang.skript.lang.comparator.Comparators;
 import org.skriptlang.skript.lang.converter.Converters;
@@ -38,7 +38,7 @@ class AddonRegistrationTest {
     @Test
     void registersAllModulesWithoutDuplicateTypes() throws Exception {
         PacketEventsTestBootstrap.initialize();
-        Skript skript = Skript.of(AddonRegistrationTest.class, "skPackets-test"); // name can't be the same as addon name
+        Skript skript = Skript.of(AddonRegistrationTest.class, "skPackets-test");
         skript.storeRegistry(EventValueRegistry.class, EventValueRegistry.empty(skript));
         try (var snapshots = new RegistrySnapshots(
                 Classes.class, Comparators.class, Converters.class,

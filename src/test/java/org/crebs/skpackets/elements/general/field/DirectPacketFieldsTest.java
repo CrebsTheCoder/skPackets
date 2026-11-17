@@ -5,8 +5,8 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
-import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.crebs.skpackets.api.util.field.FieldAccessor;
+import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,8 +15,10 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class DirectPacketFieldsTest {
     @BeforeAll static void initialize() {

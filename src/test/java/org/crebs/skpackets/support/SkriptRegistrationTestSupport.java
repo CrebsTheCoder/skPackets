@@ -6,7 +6,6 @@ import ch.njol.skript.registrations.Classes;
 
 import static org.mockito.Mockito.*;
 
-/** Supplies core host metadata missing from standalone addon registration tests. */
 public final class SkriptRegistrationTestSupport {
     private SkriptRegistrationTestSupport() {}
     @SuppressWarnings({"rawtypes", "unchecked"})

@@ -7,7 +7,7 @@
 Create client-side entities, send packets, and change what individual players see without modifying the server-side world or inventory.
 
 <a href="https://skdocs.org/?addon=skPackets">
-  <img src="skdocs.org/viewdocs.png" alt="View skPackets documentation on SkDocs">
+  <img src="https://skdocs.org/viewdocs.png" alt="View skPackets documentation on SkDocs">
 </a>
 <a href="http://skripthub.net/docs/?addon=skPackets">
   <img src="http://skripthub.net/static/addon/ViewTheDocsButton.png" alt="View skPackets documentation on SkriptHub">

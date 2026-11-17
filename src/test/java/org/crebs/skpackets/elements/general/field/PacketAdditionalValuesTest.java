@@ -1,16 +1,21 @@
 package org.crebs.skpackets.elements.general.field;
 
-import org.junit.jupiter.api.Test;
-import org.crebs.skpackets.support.PacketEventsTestBootstrap;
-import org.junit.jupiter.api.BeforeAll;
-import java.util.*;
-import org.bukkit.util.Vector;
-import com.github.retrooper.packetevents.protocol.score.*;
+import com.github.retrooper.packetevents.protocol.score.BlankScoreFormat;
+import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
+import com.github.retrooper.packetevents.protocol.vector.positionpath.PositionPath;
+import com.github.retrooper.packetevents.protocol.vector.vecdelta.LinearVecDelta;
+import com.github.retrooper.packetevents.protocol.vector.vecdelta.VecDelta;
 import com.github.retrooper.packetevents.protocol.world.dimension.DimensionTypeRef;
 import com.github.retrooper.packetevents.protocol.world.waypoint.*;
-import com.github.retrooper.packetevents.protocol.vector.positionpath.*;
-import com.github.retrooper.packetevents.protocol.vector.vecdelta.*;
 import net.kyori.adventure.text.Component;
+import org.bukkit.util.Vector;
+import org.crebs.skpackets.support.PacketEventsTestBootstrap;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PacketAdditionalValuesTest {

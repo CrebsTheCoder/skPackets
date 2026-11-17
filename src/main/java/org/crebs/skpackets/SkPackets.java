@@ -94,7 +94,9 @@ public final class SkPackets extends JavaPlugin {
         registration.finalizeRegistration();
         ElementCounts.log(registration, getServer().getConsoleSender());
         saveDefaultConfig();
-        metrics = new Metrics(this, 35259);
+        if (getConfig().getBoolean("bstats", true)) {
+            metrics = new Metrics(this, 35259);
+        }
         updateChecker = new org.crebs.skpackets.api.update.UpdateChecker(this);
         updateChecker.start();
     }

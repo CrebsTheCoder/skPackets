@@ -1,18 +1,20 @@
 package org.crebs.skpackets.elements.general.field;
 
-import org.crebs.skpackets.api.general.packet.PacketAccessManager;
-
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.crebs.skpackets.api.general.packet.PacketAccessManager;
 import org.crebs.skpackets.api.util.field.BaseFieldRegistry;
 import org.crebs.skpackets.api.util.field.ConstructionContext;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 record PacketFieldBinding(
         String name,

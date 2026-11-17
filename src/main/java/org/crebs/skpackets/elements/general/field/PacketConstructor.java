@@ -1,24 +1,23 @@
 package org.crebs.skpackets.elements.general.field;
 
-import org.crebs.skpackets.api.general.packet.PacketAccessManager;
-
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.crebs.skpackets.api.general.packet.PacketAccessManager;
 import org.crebs.skpackets.api.util.field.ConstructionContext;
-
-import java.io.IOException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.TypeReference;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.io.IOException;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Stream;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 record PacketConstructor(Constructor<?> method, List<PacketConstructor.Argument> arguments,
                          Function<Object[], Object> factory) {

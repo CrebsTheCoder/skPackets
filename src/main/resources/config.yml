@@ -1,3 +1,6 @@
+# You can set this to false if you don't want to give me stats :(, I'd be sad, but I understand.
+bstats: true
+
 # Check the latest release.
 update-checker: #Only checks when server starts
   enabled: true

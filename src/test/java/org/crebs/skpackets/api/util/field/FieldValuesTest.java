@@ -2,9 +2,12 @@ package org.crebs.skpackets.api.util.field;
 
 import ch.njol.skript.Skript;
 import org.junit.jupiter.api.Test;
+
 import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 class FieldValuesTest {
     @Test

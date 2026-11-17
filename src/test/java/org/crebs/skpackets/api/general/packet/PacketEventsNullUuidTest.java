@@ -2,12 +2,10 @@ package org.crebs.skpackets.api.general.packet;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.PacketEventsAPI;
-import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import org.crebs.skpackets.api.simple.PlayerSkinRefresh;
-import org.crebs.skpackets.api.simple.FakeInventoryManager;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import org.bukkit.Bukkit;
@@ -16,13 +14,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.crebs.skpackets.api.general.EntityTracker;
 import org.crebs.skpackets.api.simple.ChatSessionListener;
 import org.crebs.skpackets.api.simple.FakeBlockManager;
+import org.crebs.skpackets.api.simple.FakeInventoryManager;
+import org.crebs.skpackets.api.simple.PlayerSkinRefresh;
 import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 class PacketEventsNullUuidTest {

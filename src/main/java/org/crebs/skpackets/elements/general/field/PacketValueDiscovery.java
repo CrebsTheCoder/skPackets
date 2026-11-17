@@ -42,7 +42,6 @@ final class PacketValueDiscovery {
             }
             return names.containsAll(supplied);
         }).toList();
-        // Prefer the builder that needs the fewest omitted optional inputs.
         int size = matches.stream().mapToInt(shape -> shape.fields().size()).min().orElse(-1);
         matches = matches.stream().filter(shape -> shape.fields().size() == size).toList();
         if (matches.size() != 1) throw new IllegalArgumentException(

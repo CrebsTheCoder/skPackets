@@ -174,7 +174,6 @@ public final class PacketArguments {
     }
 
     private static Object mapElement(Object value) {
-        // A copied map entry must retain an empty optional instead of storing a null in PacketRecord.
         return value instanceof Optional<?> optional && optional.isEmpty() ? new PacketValue(optional) : toSkript(value);
     }
 

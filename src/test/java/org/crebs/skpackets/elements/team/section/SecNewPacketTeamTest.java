@@ -4,10 +4,10 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import org.crebs.skpackets.elements.team.TeamField;
-import org.crebs.skpackets.elements.team.PacketTeam;
 import org.crebs.skpackets.SkPackets;
 import org.crebs.skpackets.api.team.PacketTeamManager;
+import org.crebs.skpackets.elements.team.PacketTeam;
+import org.crebs.skpackets.elements.team.TeamField;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockMakers;
 

@@ -142,7 +142,6 @@ public final class PacketRecords {
         }
     };
 
-    // Wrapping each concrete builder in a named section also distinguishes variants with identical inputs.
     private static Shape variant(String name, Class<?> type) {
         return new Shape(List.of(field(name, type, false)), Map.of(), values -> values.get(name));
     }

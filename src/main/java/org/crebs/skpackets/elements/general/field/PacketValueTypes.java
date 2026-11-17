@@ -5,7 +5,10 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.github.shanebeee.skr.Registration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public final class PacketValueTypes {
     private PacketValueTypes() {}

@@ -1,11 +1,13 @@
 package org.crebs.skpackets.elements.general.field;
 
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkBiomes;
 import com.github.retrooper.packetevents.util.Vector2i;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkBiomes;
 import org.crebs.skpackets.api.general.Vector2;
 import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Type;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PacketMapBuilderTest {

@@ -9,10 +9,10 @@ import org.crebs.skpackets.SkPackets;
 import org.crebs.skpackets.api.team.PacketTeamManager;
 import org.crebs.skpackets.elements.team.PacketTeam;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockMakers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import org.mockito.MockMakers;
 
 class ExprPacketTeamTest {
     @Test

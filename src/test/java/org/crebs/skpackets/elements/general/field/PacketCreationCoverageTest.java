@@ -1,18 +1,21 @@
 package org.crebs.skpackets.elements.general.field;
 
 import com.github.retrooper.packetevents.protocol.PacketSide;
-import com.github.retrooper.packetevents.protocol.packettype.*;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUseItem;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
-import com.github.retrooper.packetevents.protocol.player.InteractionHand;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.crebs.skpackets.api.general.packet.PacketTypeRegistry;
-import org.crebs.skpackets.api.util.field.*;
+import org.crebs.skpackets.api.util.field.ConstructionContext;
 import org.crebs.skpackets.support.PacketEventsTestBootstrap;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -20,7 +23,8 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class PacketCreationCoverageTest {
     @BeforeAll static void initialize() {

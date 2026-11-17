@@ -1,10 +1,10 @@
 package org.crebs.skpackets.elements.general.field;
 
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateSign;
+import com.github.retrooper.packetevents.wrapper.play.server.*;
 import org.bukkit.block.sign.Side;
 import org.bukkit.util.Vector;
 import org.crebs.skpackets.api.entity.metadata.EntityMeta;
@@ -13,8 +13,8 @@ import org.crebs.skpackets.api.general.EntityTracker;
 import java.util.Map;
 
 import static java.util.Map.entry;
-import static org.crebs.skpackets.elements.general.field.PacketFieldRule.named;
 import static org.crebs.skpackets.elements.general.field.PacketFieldRule.DEFAULT;
+import static org.crebs.skpackets.elements.general.field.PacketFieldRule.named;
 
 final class PacketFieldRules {
     private static final PacketFieldAdapter SIGN_SIDE = new PacketFieldAdapter(Side.class,

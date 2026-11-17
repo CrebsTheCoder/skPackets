@@ -3,30 +3,31 @@ package org.crebs.skpackets.elements.general.field;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
-import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUseItem;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.text.Component;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
-import org.crebs.skpackets.support.PacketEventsTestBootstrap;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
-import org.junit.jupiter.api.*;
+import org.crebs.skpackets.support.PacketEventsTestBootstrap;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.UUID;
-import java.util.EnumSet;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class PacketWireTest {
     static Stream<Arguments> bossBarVersionsAndActions() {

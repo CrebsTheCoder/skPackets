@@ -1,12 +1,15 @@
 package org.crebs.skpackets.elements.general.field;
 
-import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
+import org.crebs.skpackets.support.PacketEventsTestBootstrap;
 import org.junit.jupiter.api.Test;
-import java.util.*;
+
 import java.lang.reflect.Type;
-import static org.mockito.Mockito.*;
+import java.util.*;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class PacketConstructionAuditTest {
     private static final Set<String> REVIEWED_GAPS = Set.of(

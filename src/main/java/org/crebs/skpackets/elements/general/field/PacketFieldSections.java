@@ -8,7 +8,9 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.github.shanebeee.skr.skript.SimpleEntryValidator;
 import org.bukkit.event.Event;
-import org.crebs.skpackets.api.util.field.*;
+import org.crebs.skpackets.api.util.field.FieldAccessor;
+import org.crebs.skpackets.api.util.field.FieldSchema;
+import org.crebs.skpackets.api.util.field.FieldSections;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -96,7 +98,6 @@ public final class PacketFieldSections {
         Set<String> supplied = new HashSet<>();
         for (var node : section) {
             if (node.isVoid() || node.getKey() == null) continue;
-            // Before entry validation, simple nodes still contain the entire "field: value" line.
             String key = node.getKey();
             if (!(node instanceof SectionNode) && key.contains(":")) key = key.substring(0, key.indexOf(':')).trim();
             supplied.add(key.toLowerCase(Locale.ROOT));

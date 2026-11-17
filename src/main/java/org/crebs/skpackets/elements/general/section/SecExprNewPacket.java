@@ -38,7 +38,10 @@ import org.crebs.skpackets.elements.general.field.PacketFieldRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class SecExprNewPacket extends SectionExpression<PacketWrapper<?>> {
 
